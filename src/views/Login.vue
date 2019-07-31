@@ -87,7 +87,6 @@ export default {
       this.$refs[formName].validate(valid => {
         if (valid) {
           //提交成功之后操作
-
           this.axios
             .get("/OAuth/authenticate", {
               params: {
@@ -100,22 +99,26 @@ export default {
               if (res.status === 200 && res.statusText === "OK") {
                 var token = res.data.token_type + " " + res.data.access_token;
                 sessionStorage.setItem("token", JSON.stringify(token));
-                this.$router.push("/home");
+                if (this.checked) {
+                  Cookie.setCookie(
+                    "userName",
+                    Base.encode(this.ruleForm.userMobile),
+                    {maxAge: 60*60*24}
+                  );
+                  Cookie.setCookie(
+                    "userPass",
+                    Base.encode(this.ruleForm.userPassword),
+                    {maxAge: 60*60*24}
+                  );
+                }else{
+                  Cookie.removeCookie("userName"); //移除cookie
+                  Cookie.removeCookie("userPass"); 
+                }
                 this.$message({
                   message: "恭喜，登录成功",
                   type: "success"
                 });
-                if (this.checked) {
-                  Cookie.setCookie(
-                    "userName",
-                    JSON.stringify(Base.encode(this.ruleForm.userMobile))
-                  );
-                  Cookie.setCookie(
-                    "userPass",
-                    JSON.stringify(Base.encode(this.ruleForm.userPassword))
-                  );
-                  Cookie.removeCookie("60");
-                }
+                this.$router.push("/home");
               } else {
                 this.$router.push("/");
               }
@@ -138,6 +141,8 @@ export default {
     },
     //登录框重置
     resetForm(formName) {
+      // this.ruleForm.userMobile = "";
+      // this.ruleForm.userPassword = "";
       this.$refs[formName].resetFields();
     }
   }
