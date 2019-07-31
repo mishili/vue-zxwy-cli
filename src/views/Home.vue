@@ -1,5 +1,6 @@
 <template>
   <div class="home">
+    <h1>这个是首页</h1>
     <Headers/>
     <router-view name="sidebar"/>
   </div>
@@ -16,3 +17,14 @@ export default {
   }
 }
 </script>
+
+<style lang="scss" scoped>
+  .home{
+    margin-top: 60px;
+    line-height: 60px;
+  }
+  h1{
+    font-size: 30px;
+    font-weight: 600px;
+  }
+</style>

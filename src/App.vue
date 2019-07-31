@@ -1,21 +1,26 @@
 <template>
   <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
+    <!-- <img alt="Vue logo" src="./assets/logo.png">
     <div id="nav">
       <router-link to="/">Home</router-link> |
       <router-link to="/login">登录/注册</router-link>
-    </div>
+    </div> -->
     <router-view/>
   </div>
 </template>
 
 <style lang="scss">
+@import '@/common/scss/index.scss';
+html,body{
+  height: 100%;
+}
 #app {
   font-family: 'Avenir', Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
+  height: 100%;
 }
 #nav {
   padding: 30px;
