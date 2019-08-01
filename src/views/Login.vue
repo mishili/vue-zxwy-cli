@@ -23,7 +23,7 @@
           ></el-input>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="submitForm('ruleForm')">提交</el-button>
+          <el-button type="primary" @click="submitForm('ruleForm')" :loading="loading">提交</el-button>
           <el-button @click="resetForm('ruleForm')">重置</el-button>
         </el-form-item>
         <el-form-item>
@@ -37,30 +37,14 @@
 <script>
 import Base from "@/util/Base64";
 import Cookie from "@/util/Cookie";
+import { setTimeout } from 'timers';
 
 export default {
   name: "logReg",
   data() {
-    //登录账号验证
-    var validateuserMobile = (rule, value, callback) => {
-      if (value === "") {
-        callback(new Error("请输入账号"));
-      } else {
-        //向后台请求验证账号是否存在
-        callback();
-      }
-    };
-    //登录密码验证
-    var validateuserPassword = (rule, value, callback) => {
-      if (value === "") {
-        callback(new Error("请输入密码"));
-      } else {
-        //向后台验证，也可以不处理
-        callback();
-      }
-    };
     return {
       checked: false, //记住密码状态
+      loading: false,  //提交时加载状态
       //登录账号密码
       ruleForm: {
         userMobile: "",
@@ -68,71 +52,80 @@ export default {
       },
       //登录验证
       rules: {
-        userMobile: [{ validator: validateuserMobile, trigger: "blur" }],
-        userPassword: [{ validator: validateuserPassword, trigger: "blur" }]
+        userMobile: [
+          { required: true, message: '请输入账号', trigger: 'blur' }
+        ],
+        userPassword: [
+          { required: true, message: '请输入密码', trigger: 'blur' }
+        ]
       }
     };
   },
   created() {
-    this.ruleForm.userMobile = "";
-    this.ruleForm.userPassword = "";
+    // Cookie存储账号和密码都存在时，也就是用户勾选记住密码并登录成功时,login页面显示账号和密码
     if (Cookie.getCookie("userName") && Cookie.getCookie("userPass")) {
-      this.ruleForm.userMobile = Base.decode(Cookie.getCookie("userName"));
-      this.ruleForm.userPassword = Base.decode(Cookie.getCookie("userPass"));
+      this.ruleForm.userMobile = Base.decode(Cookie.getCookie("userName")); //在Cookie中得到账号使用Base.encode加密用户输入的账号
+      this.ruleForm.userPassword = Base.decode(Cookie.getCookie("userPass")); //在Cookie中得到密码使用Base.encode加密用户输入的密码
+      this.checked = true;  //存在时记住密码状态为真
     }
   },
   methods: {
     //登录提交
     submitForm(formName) {
-      this.$refs[formName].validate(valid => {
+      var _this = this;
+      _this.$refs[formName].validate(valid => {
         if (valid) {
-          //提交成功之后操作
-          this.axios
-            .get("/OAuth/authenticate", {
-              params: {
-                userMobile: this.ruleForm.userMobile,
-                userPassword: this.ruleForm.userPassword
+          //用户名,密码不为空,提交成功之后操作
+          _this.loading = true; //按钮点击后呈现加载状态
+          _this.axios
+            .get("/OAuth/authenticate", { //发送请求
+              params: { //根据要api设置对应的请求参数
+                userMobile: _this.ruleForm.userMobile,
+                userPassword: _this.ruleForm.userPassword
               }
             })
             .then(res => {
-              console.log(res);
-              if (res.status === 200 && res.statusText === "OK") {
+                console.log(res);
+                _this.loading = false;  //账号,密码验证成功 加载状态取消
+                // 定义令牌,根据后台数据得到想要的数据拼接起来
                 var token = res.data.token_type + " " + res.data.access_token;
-                sessionStorage.setItem("token", JSON.stringify(token));
-                if (this.checked) {
-                  Cookie.setCookie(
-                    "userName",
-                    Base.encode(this.ruleForm.userMobile),
-                    {maxAge: 60*60*24}
+                sessionStorage.setItem("token", token);
+                if (_this.checked) {  //记住密码勾选时进入条件
+                  Cookie.setCookie( //Cookie存储账号
+                    "userName", //设置账号key
+                    Base.encode(_this.ruleForm.userMobile), //使用Base.encode加密用户输入的账号
+                    {maxAge: 60*60*24}  //设置账号存储时长,指定时间删除
                   );
-                  Cookie.setCookie(
-                    "userPass",
-                    Base.encode(this.ruleForm.userPassword),
-                    {maxAge: 60*60*24}
+                  Cookie.setCookie( //Cookie存储密码
+                    "userPass", //设置密码key
+                    Base.encode(_this.ruleForm.userPassword), //使用Base.encode加密用户输入的密码
+                    {maxAge: 60*60*24}  //设置密码存储时长,指定时间删除
                   );
                 }else{
-                  Cookie.removeCookie("userName"); //移除cookie
-                  Cookie.removeCookie("userPass"); 
+                  Cookie.removeCookie("userName"); //移除cookie账号
+                  Cookie.removeCookie("userPass"); //移除cookie密码
                 }
-                this.$message({
-                  message: "恭喜，登录成功",
+                _this.$message({  //登录成功提示语句
+                  message: "登录成功",
                   type: "success"
                 });
-                this.$router.push("/home");
-              } else {
-                this.$router.push("/");
-              }
+                _this.$router.push("/home");  //成功后跳转到首页
             })
             .catch(error => {
-              this.$message({
+              // 在账号或者密码错误,设置一定时间让用户不频繁请求
+              setTimeout(function(){
+                _this.loading = false;
+              },1000)
+              _this.$message({  //登录失败提示语句
                 message: "账号或者密码错误",
                 type: "error"
               });
               console.log(error);
             });
         } else {
-          this.$message({
-            message: "抱歉，登录失败",
+          // 账号或者密码为空时提示语句
+          _this.$message({
+            message: "请输入用户名和密码",
             type: "warning"
           });
           return false;
@@ -141,8 +134,6 @@ export default {
     },
     //登录框重置
     resetForm(formName) {
-      // this.ruleForm.userMobile = "";
-      // this.ruleForm.userPassword = "";
       this.$refs[formName].resetFields();
     }
   }
@@ -150,6 +141,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+// sass 变量声明
 $login-bg1: rgba(254, 112, 26, 0.8);
 $login-bg2: rgba(254, 112, 26, 0.9);
 
@@ -158,7 +150,7 @@ $login-bg2: rgba(254, 112, 26, 0.9);
   justify-content: center;
   align-items: center;
   height: 100%;
-  background: url("../assets/car.jpg") center no-repeat;
+  background: url("../assets/bg.gif") center no-repeat;
   background-size: cover;
 }
 .el-button--primary {
@@ -218,6 +210,7 @@ $login-bg2: rgba(254, 112, 26, 0.9);
   color: red;
   text-decoration: underline;
 }
+// 当需要覆盖,样式不成功时，使用/deep/深入
 /deep/ .el-checkbox__input {
   &.is-focus {
     .el-checkbox__inner {

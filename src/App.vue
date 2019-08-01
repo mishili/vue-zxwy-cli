@@ -10,6 +10,7 @@
 </template>
 
 <style lang="scss">
+// @ is an alias to /src
 @import '@/common/scss/index.scss';
 html,body{
   height: 100%;
