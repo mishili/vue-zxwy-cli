@@ -35,9 +35,10 @@
 </template>
 
 <script>
+// 引用工具类
 import Base from "@/util/Base64";
 import Cookie from "@/util/Cookie";
-import { setTimeout } from 'timers';
+// import { setTimeout } from 'timers';
 
 export default {
   name: "logReg",
@@ -64,8 +65,8 @@ export default {
   created() {
     // Cookie存储账号和密码都存在时，也就是用户勾选记住密码并登录成功时,login页面显示账号和密码
     if (Cookie.getCookie("userName") && Cookie.getCookie("userPass")) {
-      this.ruleForm.userMobile = Base.decode(Cookie.getCookie("userName")); //在Cookie中得到账号使用Base.encode加密用户输入的账号
-      this.ruleForm.userPassword = Base.decode(Cookie.getCookie("userPass")); //在Cookie中得到密码使用Base.encode加密用户输入的密码
+      this.ruleForm.userMobile = Base.decode(Cookie.getCookie("userName")); //在Cookie中得到账号使用Base.decode解密用户输入的账号
+      this.ruleForm.userPassword = Base.decode(Cookie.getCookie("userPass")); //在Cookie中得到密码使用Base.decode解密用户输入的密码
       this.checked = true;  //存在时记住密码状态为真
     }
   },
