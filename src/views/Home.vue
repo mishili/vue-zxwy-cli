@@ -150,6 +150,13 @@ export default {
         _this.asideTionList.push(item);
       });
     });
+    var getTabList = JSON.parse(sessionStorage.getItem('editableTabs')); //得到存储的tab内容
+    var getTabName = sessionStorage.getItem('TabName'); //得到存储的tab位置name
+    if(getTabList&&getTabName){ //如果存在sessionStorage数据,改变其结果
+      _this.editableTabs = getTabList;
+      _this.editableTabsValue = getTabName;
+      _this.tabIndex = Number(getTabName);
+    }
   },
   methods: {
     /**
@@ -169,8 +176,12 @@ export default {
           name: newTabName,
           content: value.name
         });
+      }else{
+        newTabName = _this.editableTabs[asideindex].name; //使用editableTabs数组中name指定tab标签页位置
       }
       _this.editableTabsValue = newTabName; //点击后tab标签页默认位置对应改变
+      sessionStorage.setItem('editableTabs',JSON.stringify(_this.editableTabs)); //添加存储用户操作的tab内容
+      sessionStorage.setItem('TabName',newTabName); //存储用户操作的tab位置,这里需要的是editableTabs数组中name
     },
     /**
      * tab标签页点击,侧边栏路由对应
@@ -182,6 +193,7 @@ export default {
         return tabName.name == targetIndex.label;
       }
       let index = _this.asideTionList.findIndex(checkLabel);
+      sessionStorage.setItem('TabName',targetIndex.name)
       _this.routerPath(index); //使用自定义方法跳转
     },
     /**
@@ -205,15 +217,26 @@ export default {
         });
       }
       _this.editableTabsValue = activeName; //删除后tab标签页默认位置对应改变
-      if(activeName!=1){  //默认位置不等于1(首页tab位置),才更改,使用filter方法过滤
-        _this.editableTabs = tabs.filter(tab => tab.name !== targetName);
-      }else{
+      if(targetName==1){
         _this.$message({  //首页tab不可以删除
           message: "不允许操作",
           type: "error"
         });
+      }else{  //默认位置不等于1(首页tab位置),才更改,使用filter方法过滤
+        _this.editableTabs = tabs.filter(tab => tab.name !== targetName);
       }
-      _this.routerPath(activeName-1); //使用自定义方法跳转,activeName时位置要-1
+      function checkTabe(tabName) {  //返回查询name的下标
+        return tabName.name == activeName;
+      }
+      let index1 = tabs.findIndex(checkTabe);
+      function checkPath(tabName) {  //查询title返回对应name(提取的侧边栏name)的下标
+        return tabName.name == tabs[index1].title;
+      }
+      let index2 = _this.asideTionList.findIndex(checkPath);
+      console.log(index2,activeName,tabs[index1].title)
+      sessionStorage.setItem('editableTabs',JSON.stringify(tabs));//删除时存储用户操作的tab内容
+      sessionStorage.setItem('TabName',activeName); //存储用户操作的tab位置,这里需要的是editableTabs数组中name
+      _this.routerPath(index2); //使用自定义方法跳转,activeName时位置要-1
     },
     /**
      * 路由对应跳转,传入下标
