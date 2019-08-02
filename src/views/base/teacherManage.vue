@@ -1,6 +1,6 @@
 <template>
     <div>
-        <h1>老师管理</h1>
+        <h1>老师管理内容</h1>
     </div>
 </template>
 
@@ -14,6 +14,6 @@ export default {
 }
 </script>
 
-<style lang="sass" scoped>
+<style lang="scss" scoped>
 
 </style>

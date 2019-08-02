@@ -1,6 +1,6 @@
 <template>
     <div>
-        <h1>班级管理内容</h1>
+        <h1>首页内容</h1>
     </div>
 </template>
 

@@ -1,5 +1,5 @@
 <template>
-  <div class="logReg">
+  <div id="logReg">
     <!-- 登录 -->
     <div class="login">
       <div class="login-title">登录</div>
@@ -71,7 +71,9 @@ export default {
     }
   },
   methods: {
-    //登录提交
+    /**
+     * 登录提交
+     */
     submitForm(formName) {
       var _this = this;
       _this.$refs[formName].validate(valid => {
@@ -110,7 +112,7 @@ export default {
                   message: "登录成功",
                   type: "success"
                 });
-                _this.$router.push("/home");  //成功后跳转到首页
+                _this.$router.replace("/home");  //成功后跳转到首页
             })
             .catch(error => {
               // 在账号或者密码错误,设置一定时间让用户不频繁请求
@@ -133,7 +135,9 @@ export default {
         }
       });
     },
-    //登录框重置
+    /**
+     * 登录框重置
+     */
     resetForm(formName) {
       this.$refs[formName].resetFields();
     }
@@ -146,7 +150,7 @@ export default {
 $login-bg1: rgba(254, 112, 26, 0.8);
 $login-bg2: rgba(254, 112, 26, 0.9);
 
-.logReg {
+#logReg {
   display: flex;
   justify-content: center;
   align-items: center;

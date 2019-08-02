@@ -1,6 +1,6 @@
 <template>
     <div>
-        <h1>查看成绩</h1>
+        <h1>查看成绩内容</h1>
     </div>
 </template>
 
@@ -14,6 +14,6 @@ export default {
 }
 </script>
 
-<style lang="sass" scoped>
+<style lang="scss" scoped>
 
 </style>

@@ -1,3 +1,4 @@
+import HomeContent from '../views/base/homeContent'
 import StudentManage from '../views/base/studentManage'
 import TeacherManage from '../views/base/teacherManage'
 import GradeManage from '../views/base/gradeManage'
@@ -6,11 +7,12 @@ import ChangePassword from '../views/base/changePassword'
 export default [
     {
         path: '',
-        redirect: {name: 'studentManage'}
+        components: {
+            sidebar: HomeContent
+        }
     },
     {
         path: '/studentManage',
-        name: 'studentManage',
         components: {
             sidebar: StudentManage
         }
