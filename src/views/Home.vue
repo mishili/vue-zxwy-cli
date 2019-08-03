@@ -259,10 +259,9 @@ export default {
           message: "不允许操作",
           type: "error"
         });
-      } else {
-        //默认位置不等于1(首页tab位置),才更改,使用filter方法过滤
-        _this.editableTabs = tabs.filter(tab => tab.name !== targetName);
       }
+      //默认位置不等于1(首页tab位置),才更改,使用filter方法过滤
+      _this.editableTabs = tabs.filter(tab => tab.name !== targetName);
       function checkTabe(tabName) {
         //返回查询name的下标
         return tabName.name == activeName;
@@ -273,8 +272,8 @@ export default {
         return tabName.name == tabs[index1].title;
       }
       let index2 = _this.asideTionList.findIndex(checkPath);
-      console.log(index2, activeName, tabs[index1].title);
-      sessionStorage.setItem("editableTabs", JSON.stringify(tabs)); //删除时存储用户操作的tab内容
+      // console.log(index2, activeName, tabs[index1].title);
+      sessionStorage.setItem("editableTabs", JSON.stringify(_this.editableTabs)); //删除时存储用户操作的tab内容
       sessionStorage.setItem("TabName", activeName); //存储用户操作的tab位置,这里需要的是editableTabs数组中name
       _this.routerPath(index2); //使用自定义方法跳转,activeName时位置要-1
     },
@@ -317,7 +316,7 @@ export default {
   .menu_a {
     /deep/ a {
       display: block;
-      color: #409bd3;
+      color: #ccc;
       &.router-link-exact-active {
         &.router-link-active {
           position: relative;
