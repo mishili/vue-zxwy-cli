@@ -317,7 +317,7 @@ export default {
   .menu_a {
     /deep/ a {
       display: block;
-      color: #409bd3;
+      color: #ccc;
       &.router-link-exact-active {
         &.router-link-active {
           position: relative;
