@@ -4,19 +4,25 @@
       <!-- 侧边栏 -->
       <el-aside width="auto" style="background-color: #545c64">
         <el-row class="pic">
-          <router-link to="/home">
+          <router-link :to="activePath">
             <img src="../assets/logo.png">
           </router-link>
         </el-row>
         <el-menu
           :default-openeds="['1', '2']"
+          :default-active="activeindex"
           class="el-menu-vertical-demo"
+          router
           :collapse="isCollapse"
           background-color="#545c64"
-          text-color="#fff"
-          active-text-color="#ffd04b"
+          text-color="#ccc"
+          active-text-color="#409eff"
         >
-          <el-submenu v-for="(value,index) in asideTion" :key="index" :index="String(index+1)">
+          <el-menu-item class="el_item" :index="activePath" @click="addTab('首页')">
+            <i class="el-icon-s-home"></i>
+            <span slot="title">首页</span>
+          </el-menu-item>
+          <el-submenu v-for="(value,index) in asideTion" :key="index" :index="''+(index+1)">
             <template slot="title">
               <i :class="value.class"></i>
               <span slot="title">{{ value.aside }}</span>
@@ -25,11 +31,10 @@
               <el-menu-item
                 v-for="(value,index) in value.option"
                 :key="index"
-                @click="addTab(value,index)"
+                @click="addTab(value.name,value.path)"
                 class="menu_a"
-              >
-                <router-link :to="value.path">{{ value.name }}</router-link>
-              </el-menu-item>
+                :index="value.path"
+              >{{ value.name }}</el-menu-item>
             </el-menu-item-group>
           </el-submenu>
         </el-menu>
@@ -56,15 +61,15 @@
             <el-tabs
               v-model="editableTabsValue"
               type="card"
-              closable
               @tab-click="clickTab"
               @tab-remove="removeTab"
             >
               <el-tab-pane
-                v-for="item in editableTabs"
+                v-for="(item,index) in editableTabs"
                 :key="item.name"
                 :label="item.title"
                 :name="item.name"
+                :closable="index>0"
               ></el-tab-pane>
             </el-tabs>
           </el-row>
@@ -84,6 +89,9 @@
         </el-header>
         <el-main>
           <!-- 路由视图 -->
+          <keep-alive>
+              <router-view/>
+          </keep-alive>
           <router-view name="sidebar"/>
         </el-main>
       </el-container>
@@ -96,6 +104,8 @@ export default {
   name: "Home",
   data() {
     return {
+      activePath: "/home", //首页路径
+      activeindex: "/home", //当前激活菜单的 Path
       isCollapse: false, //侧边栏是否收起
       circleUrl:
         "https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png", //用作用户头像
@@ -106,10 +116,6 @@ export default {
           class: "el-icon-menu", //定义icon样式
           option: [
             //二级菜单
-            {
-              name: "首页",
-              path: "/home"
-            },
             {
               name: "学生管理",
               path: "/studentManage"
@@ -161,8 +167,8 @@ export default {
         //tab标签页内容
         {
           title: "首页",
-          name: "1", //内容中表示位置
-          content: "首页标题"
+          name: "1",//内容中表示位置
+          path: '/home'
         }
       ],
       tabIndex: 1 //用于添加tab标签页时,从下标1开始,因为一开始有首页
@@ -172,9 +178,10 @@ export default {
     let _this = this;
     // 侧边栏结构不同,用option自己拼接成单独数组对象
     _this.asideTion.forEach(item => {
-      item.option.forEach(item => {
-        _this.asideTionList.push(item);
-      });
+      _this.asideTionList.push(...item.option);
+      // item.option.forEach(item => {
+      //   _this.asideTionList.push(item);
+      // });
     });
     var getTabList = JSON.parse(sessionStorage.getItem("editableTabs")); //得到存储的tab内容
     var getTabName = sessionStorage.getItem("TabName"); //得到存储的tab位置name
@@ -182,28 +189,28 @@ export default {
       //如果存在sessionStorage数据,改变其结果
       _this.editableTabs = getTabList;
       _this.editableTabsValue = getTabName;
-      _this.tabIndex = Number(getTabName);
+      _this.tabIndex = getTabList[getTabList.length - 1].name;
     }
   },
   methods: {
     /**
      * 侧边栏点击添加tab标签页
      */
-    addTab(value, index) {
+    addTab(name,path) {
       let _this = this;
       function checkAdult(ediTabTittle) {
         //点击时查询传入name的下标
-        return ediTabTittle.title == value.name; //editableTabs中的title与传入name相等返回查询下标 ，没有返回-1
+        return ediTabTittle.title == name; //editableTabs中的title与传入name相等返回查询下标 ，没有返回-1
       }
       let asideindex = _this.editableTabs.findIndex(checkAdult); //使用findIndex方法 返回符合测试条件的第一个数组元素索引
-      let newTabName = asideindex + 1 + ""; // 索引+1 == editableTabsValue tab标签页位置
+      let newTabName = ""; // 定义变量表示tab标签页位置
       if (asideindex == -1) {
         //如果查询结果为 -1 证明tab标签页不存在 可以添加tab标签页
         newTabName = ++_this.tabIndex + "";
         _this.editableTabs.push({
-          title: value.name,
+          title: name,
           name: newTabName,
-          content: value.name
+          path: path
         });
       } else {
         newTabName = _this.editableTabs[asideindex].name; //使用editableTabs数组中name指定tab标签页位置
@@ -218,16 +225,14 @@ export default {
     /**
      * tab标签页点击,侧边栏路由对应
      */
-    clickTab(targetIndex) {
+    clickTab(targetPane) {
       let _this = this;
-      let label = targetIndex.label; //得到点击的name
-      function checkLabel(tabName) {
-        //返回查询的下标
-        return tabName.name == targetIndex.label;
-      }
-      let index = _this.asideTionList.findIndex(checkLabel);
-      sessionStorage.setItem("TabName", targetIndex.name);
-      _this.routerPath(index); //使用自定义方法跳转
+      let name = targetPane.name;
+      let index = _this.editableTabs.findIndex(
+        item => item.name == name
+      );
+      this.activeindex = _this.editableTabs[index].path;
+      sessionStorage.setItem("TabName", name);
     },
     /**
      * tab标签页点击删除
@@ -253,38 +258,32 @@ export default {
         });
       }
       _this.editableTabsValue = activeName; //删除后tab标签页默认位置对应改变
-      if (targetName == 1) {
-        _this.$message({
-          //首页tab不可以删除
-          message: "不允许操作",
-          type: "error"
-        });
-      }
-      //默认位置不等于1(首页tab位置),才更改,使用filter方法过滤
+
+      //删除后更改,使用filter方法过滤
       _this.editableTabs = tabs.filter(tab => tab.name !== targetName);
-      function checkTabe(tabName) {
-        //返回查询name的下标
-        return tabName.name == activeName;
-      }
-      let index1 = tabs.findIndex(checkTabe);
-      function checkPath(tabName) {
-        //查询title返回对应name(提取的侧边栏name)的下标
-        return tabName.name == tabs[index1].title;
-      }
-      let index2 = _this.asideTionList.findIndex(checkPath);
-      // console.log(index2, activeName, tabs[index1].title);
-      sessionStorage.setItem("editableTabs", JSON.stringify(_this.editableTabs)); //删除时存储用户操作的tab内容
+      //返回查询name的下标
+      let index = tabs.findIndex(item => item.name == activeName);
+      this.activeindex = _this.editableTabs[index].path;
+      sessionStorage.setItem(
+        "editableTabs",
+        JSON.stringify(_this.editableTabs)
+      ); //删除时存储用户操作的tab内容
       sessionStorage.setItem("TabName", activeName); //存储用户操作的tab位置,这里需要的是editableTabs数组中name
-      _this.routerPath(index2); //使用自定义方法跳转,activeName时位置要-1
+      // _this.routerPath(index2); //使用自定义方法跳转,activeName时位置要-1
     },
     /**
      * 路由对应跳转,传入下标
      */
     routerPath(index) {
       let _this = this;
-      let path = _this.asideTionList[index].path; //找到根据侧边栏筛选出来的数组的path
-      //使用replace ，跳转到指定url路径，但是history栈中不会有记录，点击返回会跳转到上上个页面
-      _this.$router.replace(path);
+      if(index==-1){
+        _this.$router.replace('/home');
+      }else{
+        let path = _this.asideTionList[index].path; //找到根据侧边栏筛选出来的数组的path
+        //使用replace ，跳转到指定url路径，但是history栈中不会有记录，点击返回会跳转到上上个页面
+        _this.$router.replace(path);
+      }
+     
     }
   }
 };
@@ -297,7 +296,7 @@ export default {
 }
 .home {
   height: 100%;
-  line-height: 60px;
+  // line-height: 60px;
   .pic {
     position: relative;
     height: 60px;
@@ -313,38 +312,19 @@ export default {
   /deep/ .el-menu {
     border-right: 0;
   }
-  .menu_a {
-    /deep/ a {
-      display: block;
-      color: #ccc;
-      &.router-link-exact-active {
-        &.router-link-active {
-          position: relative;
-          z-index: 2;
-          color: #409eff;
-          font-size: 15px;
-          &::before {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: -40px;
-            width: 200px;
-            height: 100%;
-            background: rgba($color: #000000, $alpha: 0.4);
-            z-index: -1;
-          }
-          &::after {
-            content: "";
-            position: absolute;
-            top: 12.5px;
-            right: -45px;
-            width: 0;
-            height: 0;
-            border: 10px solid transparent;
-            border-right: 10px solid #fff;
-            z-index: -1;
-          }
-        }
+  /deep/ .menu_a {
+    &.is-active {
+      position: relative;
+      background: rgba($color: #000000, $alpha: 0.4) !important;
+      &::after {
+        content: "";
+        position: absolute;
+        top: 13px;
+        right: 0;
+        width: 0;
+        height: 0;
+        border: 13px solid transparent;
+        border-right: 13px solid #fff;
       }
     }
   }
@@ -353,14 +333,13 @@ export default {
 .el-header {
   background-color: #545c64;
   color: #fff;
-  line-height: 60px;
   font-size: 12px;
   width: 100%;
   position: relative;
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  i{
+  i {
     color: #fff;
   }
   .tooltip {
@@ -376,32 +355,34 @@ export default {
 }
 // tab标签页
 /deep/ .tab-position {
-  width: 75%;
-  max-width: 75%;
-  margin-right: 5%;
-  .el-tabs__item{
+  flex: 1;
+  margin: 19px 20px 0;
+  overflow: hidden;
+  .el-tabs__item {
     color: white;
-    height: 49px;
-    &.is-active{
-      color: #409EFF;
-      border-bottom: 2px solid #409EFF !important;
+    &.is-active {
+      color: #409eff;
+      border-bottom: 3px solid #409eff !important;
     }
   }
-  .el-tabs__header{
+  .el-tabs__header {
     margin-bottom: 0;
   }
-  .el-tabs__nav{
-    max-height: 60px;
-  }
-  .el-tabs--card>.el-tabs__header{
+  .el-tabs--card > .el-tabs__header {
     border-bottom: 0;
   }
-  .el-tabs__nav-next, .el-tabs__nav-prev{
+  .el-tabs__nav-next,
+  .el-tabs__nav-prev {
     color: #fff;
   }
 }
 // 侧边栏
 .el-aside {
-  color: #333;
+  /deep/ .el_item{
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    padding-left: 58px !important;
+  }
 }
 </style>
