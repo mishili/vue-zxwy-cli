@@ -121,12 +121,12 @@ export default {
                   // 修改成功后3秒后跳转到登录页面
                   if (res.data.code == 1) {
                     _this.$message({
-                      message: "修改密码成功,3秒后自动跳转到登录页面",
+                      message: "修改密码成功,需重新登录,3秒后自动跳转到登录页面",
                       type: type
                     });
-                    setTimeout(function() {
-                      _this.$router.replace("/"); //成功后跳转到首页
-                    }, 3000);
+                    // setTimeout(function() {
+                    //   _this.$router.replace("/"); //成功后跳转到首页
+                    // }, 3000);
                   } else {
                     _this.$message({
                       //修改后提示语句
@@ -135,14 +135,15 @@ export default {
                     });
                   }
                 })
-                .catch(error => {
-                  _this.$message({
-                    //修改失败提示语句
-                    message: "修改密码失败",
-                    type: "error"
-                  });
-                  console.log(error);
-                });
+                // .catch(error => {
+                //   // 令牌失效后做处理
+                //   _this.$message({
+                //     //修改失败提示语句
+                //     message: "修改密码失败,需重新登录",
+                //     type: "error"
+                //   });
+                //   console.log(error);
+                // });
             })
             .catch(() => {
               _this.$message({

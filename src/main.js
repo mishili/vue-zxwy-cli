@@ -21,6 +21,7 @@ new Vue({
 }).$mount('#app')
 
 // axios.defaults.headers.common['Authorization'] = sessionStorage.getItem('token')
+// 每个请求都带上的参数，比如token
 axios.interceptors.request.use(
   function (config) {
     // 拦截每次请求,携带token
@@ -33,3 +34,20 @@ axios.interceptors.request.use(
     return Promise.reject(error)
   }
 )
+// 对返回的状态进行判断，比如token是否过期
+axios.interceptors.response.use((res) => {
+  // 返回的状态为1，重定向到登录页面
+  console.log(res)
+  if (res.date.code === 1) {
+    sessionStorage.clear()
+    router.replace({
+      path: '/',
+      query: {redirect: router.currentRoute.fullPath} 
+    })
+  }
+  return res
+}, function(error) {
+  // 对响应错误做点什么 token 已过期 页面如果有catch处理不会进来
+  console.log(error)
+  return Promise.reject(error) 
+})
