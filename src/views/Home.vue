@@ -3,10 +3,10 @@
     <el-container style="height: 100%;position: relative;">
       <!-- 侧边栏 -->
       <el-aside width="auto" style="background-color: #545c64">
-        <el-row class="pic">
-          <router-link :to="activePath">
+        <el-row class="pic" >
+          <span>
             <img src="../assets/logo.png">
-          </router-link>
+          </span>
         </el-row>
         <el-menu
           :default-openeds="['1', '2']"
@@ -18,7 +18,7 @@
           text-color="#ccc"
           active-text-color="#409eff"
         >
-          <el-menu-item class="el_item" :index="activePath" @click="addTab('首页')">
+          <el-menu-item class="el_item" index="/home" @click="addTab('首页')">
             <i class="el-icon-s-home"></i>
             <span slot="title">首页</span>
           </el-menu-item>
@@ -104,7 +104,6 @@ export default {
   name: "Home",
   data() {
     return {
-      activePath: "/home", //首页路径
       activeindex: "/home", //当前激活菜单的 Path
       isCollapse: false, //侧边栏是否收起
       circleUrl:
@@ -161,7 +160,7 @@ export default {
           ]
         }
       ],
-      asideTionList: [], //提取侧边栏name,path
+      asideTionList: [], //提取侧边栏name,path //无用
       editableTabsValue: "1", //默认tab标签页位置
       editableTabs: [
         //tab标签页内容
@@ -176,13 +175,13 @@ export default {
   },
   created() {
     let _this = this;
-    // 侧边栏结构不同,用option自己拼接成单独数组对象
-    _this.asideTion.forEach(item => {
-      _this.asideTionList.push(...item.option);
-      // item.option.forEach(item => {
-      //   _this.asideTionList.push(item);
-      // });
-    });
+    // 侧边栏结构不同,用option自己拼接成单独数组对象 //无用
+    // _this.asideTion.forEach(item => {
+    //   _this.asideTionList.push(...item.option);
+    //   // item.option.forEach(item => {
+    //   //   _this.asideTionList.push(item);
+    //   // });
+    // });
     var getTabList = JSON.parse(sessionStorage.getItem("editableTabs")); //得到存储的tab内容
     var getTabName = sessionStorage.getItem("TabName"); //得到存储的tab位置name
     if (getTabList && getTabName) {
@@ -190,6 +189,10 @@ export default {
       _this.editableTabs = getTabList;
       _this.editableTabsValue = getTabName;
       _this.tabIndex = getTabList[getTabList.length - 1].name;
+      let index = _this.editableTabs.findIndex(
+        item => item.name == getTabName
+      );
+      _this.activeindex = getTabList[index].path;
     }
   },
   methods: {
@@ -215,24 +218,14 @@ export default {
       } else {
         newTabName = _this.editableTabs[asideindex].name; //使用editableTabs数组中name指定tab标签页位置
       }
-      _this.editableTabsValue = newTabName; //点击后tab标签页默认位置对应改变
-      sessionStorage.setItem(
-        "editableTabs",
-        JSON.stringify(_this.editableTabs)
-      ); //添加存储用户操作的tab内容
-      sessionStorage.setItem("TabName", newTabName); //存储用户操作的tab位置,这里需要的是editableTabs数组中name
+      _this.routerViem(newTabName);
     },
     /**
      * tab标签页点击,侧边栏路由对应
      */
     clickTab(targetPane) {
       let _this = this;
-      let name = targetPane.name;
-      let index = _this.editableTabs.findIndex(
-        item => item.name == name
-      );
-      this.activeindex = _this.editableTabs[index].path;
-      sessionStorage.setItem("TabName", name);
+      _this.routerViem(targetPane.name);
     },
     /**
      * tab标签页点击删除
@@ -257,33 +250,31 @@ export default {
           }
         });
       }
-      _this.editableTabsValue = activeName; //删除后tab标签页默认位置对应改变
-
       //删除后更改,使用filter方法过滤
       _this.editableTabs = tabs.filter(tab => tab.name !== targetName);
+      _this.routerViem(activeName);
+    },
+    /**
+     * 视图对应跳转,传入tab标签页的name
+     */
+    routerViem(name) {
+      let _this = this;
+      _this.editableTabsValue = name; //点击后tab标签页默认位置对应改变
       //返回查询name的下标
-      let index = tabs.findIndex(item => item.name == activeName);
-      this.activeindex = _this.editableTabs[index].path;
+      let index = _this.editableTabs.findIndex(
+        item => item.name == name
+      );
+      // 侧边栏菜单默认打开位置
+      _this.activeindex = _this.editableTabs[index].path;
+      //删除时存储用户操作的tab内容
       sessionStorage.setItem(
         "editableTabs",
         JSON.stringify(_this.editableTabs)
-      ); //删除时存储用户操作的tab内容
-      sessionStorage.setItem("TabName", activeName); //存储用户操作的tab位置,这里需要的是editableTabs数组中name
-      // _this.routerPath(index2); //使用自定义方法跳转,activeName时位置要-1
-    },
-    /**
-     * 路由对应跳转,传入下标
-     */
-    routerPath(index) {
-      let _this = this;
-      if(index==-1){
-        _this.$router.replace('/home');
-      }else{
-        let path = _this.asideTionList[index].path; //找到根据侧边栏筛选出来的数组的path
-        //使用replace ，跳转到指定url路径，但是history栈中不会有记录，点击返回会跳转到上上个页面
-        _this.$router.replace(path);
-      }
-     
+      );
+      //存储用户操作的tab位置,这里需要的是editableTabs数组中name
+      sessionStorage.setItem("TabName", name);
+      //使用replace ，跳转到指定url路径，但是history栈中不会有记录，点击返回会跳转到上上个页面
+      _this.$router.replace(_this.activeindex);
     }
   }
 };
@@ -300,7 +291,7 @@ export default {
   .pic {
     position: relative;
     height: 60px;
-    a {
+    span {
       width: 60px;
       display: inline-block;
     }
