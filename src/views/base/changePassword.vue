@@ -124,9 +124,9 @@ export default {
                       message: "修改密码成功,需重新登录,3秒后自动跳转到登录页面",
                       type: type
                     });
-                    // setTimeout(function() {
-                    //   _this.$router.replace("/"); //成功后跳转到首页
-                    // }, 3000);
+                    setTimeout(function() {
+                      _this.$router.replace("/"); //成功后跳转到首页
+                    }, 3000);
                   } else {
                     _this.$message({
                       //修改后提示语句
