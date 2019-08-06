@@ -18,7 +18,7 @@
           text-color="#ccc"
           active-text-color="#409eff"
         >
-          <el-menu-item class="el_item" index="/home" @click="addTab('首页')">
+          <el-menu-item :class="isCollapse?'':'el_item'" index="/home" @click="addTab('首页')">
             <i class="el-icon-s-home"></i>
             <span slot="title">首页</span>
           </el-menu-item>
@@ -74,16 +74,16 @@
             </el-tabs>
           </el-row>
           <!-- 详情 -->
-          <el-dropdown>
+          <el-dropdown trigger="click" @command="handleCommand">
             <i class="el-icon-setting" style="margin-right: 15px;"></i>
             <el-dropdown-menu slot="dropdown">
-              <el-dropdown-item>查看</el-dropdown-item>
-              <el-dropdown-item>新增</el-dropdown-item>
-              <el-dropdown-item>退出登录</el-dropdown-item>
+              <el-dropdown-item command="a">查看</el-dropdown-item>
+              <el-dropdown-item command="b">新增</el-dropdown-item>
+              <el-dropdown-item command="exit">退出登录</el-dropdown-item>
             </el-dropdown-menu>
           </el-dropdown>
           <!-- 用户名 -->
-          <span>王小虎</span>
+          <span>{{ userName }}</span>
           <!-- 用户头像 -->
           <el-avatar :size="50" :src="circleUrl" style="margin-left: 15px"></el-avatar>
         </el-header>
@@ -106,8 +106,9 @@ export default {
     return {
       activeindex: "/home", //当前激活菜单的 Path
       isCollapse: false, //侧边栏是否收起
-      circleUrl:
-        "https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png", //用作用户头像
+      userName: '王大胖',//用作用户名
+      circleUrl:  //用作用户头像
+        "https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png",
       asideTion: [
         //侧边栏动态内容
         {
@@ -170,7 +171,7 @@ export default {
           path: '/home'
         }
       ],
-      tabIndex: 1 //用于添加tab标签页时,从下标1开始,因为一开始有首页
+      tabIndex: 1 //用于添加tab标签页时,从name=1开始,因为一开始有首页
     };
   },
   created() {
@@ -182,6 +183,8 @@ export default {
     //   //   _this.asideTionList.push(item);
     //   // });
     // });
+    _this.userName = sessionStorage.getItem("userName");
+    
     var getTabList = JSON.parse(sessionStorage.getItem("editableTabs")); //得到存储的tab内容
     var getTabName = sessionStorage.getItem("TabName"); //得到存储的tab位置name
     if (getTabList && getTabName) {
@@ -266,15 +269,36 @@ export default {
       );
       // 侧边栏菜单默认打开位置
       _this.activeindex = _this.editableTabs[index].path;
-      //删除时存储用户操作的tab内容
+      //使用replace ，跳转到指定url路径，但是history栈中不会有记录，点击返回会跳转到上上个页面
+      _this.$router.replace(_this.activeindex);
+      
+      //操作时存储用户操作的tab内容
       sessionStorage.setItem(
         "editableTabs",
         JSON.stringify(_this.editableTabs)
       );
       //存储用户操作的tab位置,这里需要的是editableTabs数组中name
       sessionStorage.setItem("TabName", name);
-      //使用replace ，跳转到指定url路径，但是history栈中不会有记录，点击返回会跳转到上上个页面
-      _this.$router.replace(_this.activeindex);
+    },
+    /**
+     * 详情点击
+     */
+    handleCommand(command){
+      let _this = this;
+      if(command=="exit"){
+        _this.exit();
+      }
+    },
+    /**
+     * 退出登录
+     */
+    exit() {
+      let _this = this;
+      _this.$router.push("/");
+      _this.$message({
+        message: "退出登录成功",
+        type: "success"
+      });
     }
   }
 };
@@ -310,7 +334,7 @@ export default {
       &::after {
         content: "";
         position: absolute;
-        top: 13px;
+        top: 12px;
         right: 0;
         width: 0;
         height: 0;
@@ -370,10 +394,11 @@ export default {
 // 侧边栏
 .el-aside {
   /deep/ .el_item{
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    padding-left: 58px !important;
+    // display: flex;
+    // justify-content: flex-start;
+    // align-items: center;
+    // padding-left: 58px !important;
+    margin-left: -29px;
   }
 }
 </style>

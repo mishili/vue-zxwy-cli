@@ -7,7 +7,7 @@ import TestRouter from './router/test'
 
 Vue.use(Router)
 
-export default new Router({
+const router = new Router({
   mode: 'history',
   base: process.env.BASE_URL,
   routes: [
@@ -35,3 +35,22 @@ export default new Router({
     // }
   ]
 })
+
+// 全局前置路由守卫
+router.beforeEach((to,from,next) => {
+  const isLogin = sessionStorage.token ? true : false
+  if(to.path === '/') {
+    // 清除用户名,令牌
+    // sessionStorage.removeItem('userName');
+    // sessionStorage.removeItem('token');
+    // // 清除后台页面用户存留的tab标签页操作
+    // sessionStorage.removeItem('TabName');
+    // sessionStorage.removeItem('editableTabs');
+    sessionStorage.clear(); //全部清除
+    next()
+  } else {
+    isLogin ? next() : next('/')
+  }
+})
+
+export default router

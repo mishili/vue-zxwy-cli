@@ -40,7 +40,7 @@ axios.interceptors.response.use((res) => {
   // 对响应正确做处理
   return res
 }, function(error) {
-  // 对响应错误做点什么 token 已过期 页面如果有catch处理不会进来
+  // 对响应错误做点什么 token 已过期
   
   //获取状态码
   const {status} = error.response;
@@ -55,23 +55,16 @@ axios.interceptors.response.use((res) => {
   return Promise.reject(error) 
 })
 
-// 全局前置路由守卫
-router.beforeEach((to,from,next) => {
-  const isLogin = sessionStorage.token ? true : false
-  if(to.path === '/') {
-    next()
-  } else {
-    isLogin ? next() : failureToken()
-  }
-})
-
 // token失效提示
 function failureToken(){
-  //清除token
-  Message.error("token失效,请重新登录,3秒后自动跳转");
-  sessionStorage.removeItem('token');
-  //重新登录，三秒后跳转
-  setTimeout(function() {
+  // userName用户存在
+  if(sessionStorage.getItem('userName')){
+    Message.error("身份过期,请重新登录,3秒后自动跳转");
+    //重新登录，三秒后跳转
+    setTimeout(function() {
+      router.push('/')
+    }, 3000);
+  }else{
     router.push('/')
-  }, 3000);
+  }
 }

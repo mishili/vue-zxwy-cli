@@ -63,9 +63,6 @@ export default {
     };
   },
   created() {
-    // 清除后台页面用户存留的tab标签页操作
-    sessionStorage.removeItem('TabName');
-    sessionStorage.removeItem('editableTabs');
     // Cookie存储账号和密码都存在时，也就是用户勾选记住密码并登录成功时,login页面显示账号和密码
     if (Cookie.getCookie("userName") && Cookie.getCookie("userPass")) {
       this.ruleForm.userMobile = Base.decode(Cookie.getCookie("userName")); //在Cookie中得到账号使用Base.decode解密用户输入的账号
@@ -98,6 +95,8 @@ export default {
                 sessionStorage.setItem("token", token);
                 // 存储返回的用户id,用作指定修改密码
                 sessionStorage.setItem("userUid", res.data.profile.userUid);
+                // 存储返回的用户名
+                sessionStorage.setItem("userName", res.data.profile.userName);
                 if (_this.checked) {  //记住密码勾选时进入条件
                   Cookie.setCookie( //Cookie存储账号
                     "userName", //设置账号key

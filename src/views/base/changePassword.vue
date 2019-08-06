@@ -30,9 +30,7 @@ import { setTimeout } from "timers";
 export default {
   data() {
     var validatePass2 = (rule, value, callback) => {
-      if (value === "") {
-        callback(new Error("请再次输入密码"));
-      } else if (value !== this.ruleForm.pass) {
+      if (value !== this.ruleForm.pass) {
         callback(new Error("两次输入密码不一致!"));
       } else {
         callback();
@@ -63,7 +61,10 @@ export default {
             trigger: ["blur", "change"]
           }
         ],
-        checkPass: [{ validator: validatePass2, trigger: "blur" }]
+        checkPass: [
+          { required: true, message: "请再次输入密码", trigger: "blur" },
+          { validator: validatePass2, trigger: "blur" }
+        ]
       }
     };
   },
@@ -121,7 +122,8 @@ export default {
                   // 修改成功后3秒后跳转到登录页面
                   if (res.data.code == 1) {
                     _this.$message({
-                      message: "修改密码成功,需重新登录,3秒后自动跳转到登录页面",
+                      message:
+                        "修改密码成功,需重新登录,3秒后自动跳转到登录页面",
                       type: type
                     });
                     setTimeout(function() {
@@ -135,15 +137,15 @@ export default {
                     });
                   }
                 })
-                // .catch(error => {
-                //   // 令牌失效后做处理
-                //   _this.$message({
-                //     //修改失败提示语句
-                //     message: "修改密码失败,需重新登录",
-                //     type: "error"
-                //   });
-                //   console.log(error);
-                // });
+              // .catch(error => {
+              //   // 令牌失效后做处理
+              //   _this.$message({
+              //     //修改失败提示语句
+              //     message: "修改密码失败,需重新登录",
+              //     type: "error"
+              //   });
+              //   console.log(error);
+              // });
             })
             .catch(() => {
               _this.$message({
