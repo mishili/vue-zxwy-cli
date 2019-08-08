@@ -1,5 +1,9 @@
 <template>
   <div class="chPassword">
+    <el-breadcrumb>
+      <el-breadcrumb-item><a>基础数据</a></el-breadcrumb-item>
+      <el-breadcrumb-item>修改密码</el-breadcrumb-item>
+    </el-breadcrumb>
     <el-form
       :model="ruleForm"
       status-icon

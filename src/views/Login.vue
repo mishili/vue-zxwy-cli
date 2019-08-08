@@ -73,6 +73,7 @@ export default {
   methods: {
     /**
      * 登录提交
+     * @param {Obj} formName 表单对象
      */
     submitForm(formName) {
       var _this = this;
@@ -141,6 +142,7 @@ export default {
     },
     /**
      * 登录框重置
+     * @param {Obj} formName 表单对象
      */
     resetForm(formName) {
       this.$refs[formName].resetFields();

@@ -15,12 +15,6 @@ axios.defaults.baseURL = "http://192.168.1.188:12/api";
 Vue.use(VueAxios, axios);
 Vue.use(ElementUI);
 
-new Vue({
-  router,
-  store,
-  render: h => h(App)
-}).$mount('#app')
-
 // axios.defaults.headers.common['Authorization'] = sessionStorage.getItem('token')
 // 每个请求都带上的参数，比如token
 axios.interceptors.request.use(
@@ -44,6 +38,7 @@ axios.interceptors.response.use((res) => {
   
   //获取状态码
   const {status} = error.response;
+  console.log(status)
   if(status === 401) {
     failureToken();
   }
@@ -64,7 +59,14 @@ function failureToken(){
     setTimeout(function() {
       router.push('/')
     }, 3000);
+    return
   }else{
     router.push('/')
   }
 }
+
+new Vue({
+  router,
+  store,
+  render: h => h(App)
+}).$mount('#app')

@@ -28,4 +28,7 @@ html,body{
     }
   }
 }
+.el-breadcrumb{
+  line-height: 2 !important;
+}
 </style>

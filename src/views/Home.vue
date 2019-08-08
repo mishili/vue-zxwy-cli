@@ -4,9 +4,10 @@
       <!-- 侧边栏 -->
       <el-aside width="auto" style="background-color: #545c64">
         <el-row class="pic" >
-          <span>
+          <p>
             <img src="../assets/logo.png">
-          </span>
+          </p>
+          <span v-show="!isCollapse">教学管理系统</span>
         </el-row>
         <el-menu
           :default-openeds="['1', '2']"
@@ -201,6 +202,8 @@ export default {
   methods: {
     /**
      * 侧边栏点击添加tab标签页
+     * @param {String} name 侧边栏标题
+     * @param {String} path 侧边栏路径
      */
     addTab(name,path) {
       let _this = this;
@@ -225,6 +228,7 @@ export default {
     },
     /**
      * tab标签页点击,侧边栏路由对应
+     * @param {String} targetPane tab标签页name
      */
     clickTab(targetPane) {
       let _this = this;
@@ -232,9 +236,9 @@ export default {
     },
     /**
      * tab标签页点击删除
+     * @param {String} targetName 现在删除的tab标签页位置
      */
     removeTab(targetName) {
-      // targetName 现在删除的tab标签页位置
       let _this = this;
       let tabs = _this.editableTabs; //得到editableTabs数组信息
       let activeName = _this.editableTabsValue; //得到现在tab标签页默认位置
@@ -258,7 +262,8 @@ export default {
       _this.routerViem(activeName);
     },
     /**
-     * 视图对应跳转,传入tab标签页的name
+     * 视图对应跳转
+     * @param {String} name 传入tab标签页的name
      */
     routerViem(name) {
       let _this = this;
@@ -282,6 +287,7 @@ export default {
     },
     /**
      * 详情点击
+     * @param {String} command 详情点击 通过相应的菜单项 key 
      */
     handleCommand(command){
       let _this = this;
@@ -311,12 +317,16 @@ export default {
 }
 .home {
   height: 100%;
-  // line-height: 60px;
   .pic {
+    display: flex;
+    justify-content: center;
     position: relative;
     height: 60px;
-    span {
+    line-height: 60px;
+    color: #fff;
+    p {
       width: 60px;
+      height: 60px;
       display: inline-block;
     }
     img {
