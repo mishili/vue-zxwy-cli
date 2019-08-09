@@ -1,6 +1,6 @@
 <template>
-  <!-- 全部成员 -->
-  <div classCourseId="entire">
+  <!-- 全部班级 -->
+  <div>
     <!-- 面包屑 -->
     <el-breadcrumb>
       <!-- <el-breadcrumb-item :to="{ path: '/gradeManage' }">基础数据</el-breadcrumb-item> -->
@@ -15,7 +15,7 @@
       border
       style="width: 100%;"
       height="430"
-      :default-sort="{prop: 'classCourseId', order: 'ascending'}"
+      :default-sort="{prop: 'classId', order: 'ascending'}"
     >
       <el-table-column type="index" label="编号" width="100"></el-table-column>
       <el-table-column prop="className" label="班级名称" sortable></el-table-column>
@@ -42,7 +42,7 @@
       </el-table-column>
     </el-table>
     <el-row style="margin-top:20px;">
-      <el-dialog :title="submitValue?'修 改 成 员':'增 加 成 员'" :visible.sync="dialogFormVisible" classCourseId="el-dialog">
+      <el-dialog :title="submitValue?'修 改 班 级':'增 加 班 级'" :visible.sync="dialogFormVisible" classCourseId="el-dialog">
         <el-form :model="classForm" status-icon :rules="classRules" ref="classForm">
           <el-form-item label="班级名称" prop="className" :label-width="formLabelWidth">
             <el-input v-model="classForm.className" autocomplete="off"></el-input>
@@ -74,7 +74,6 @@
 <script>
 // 引用日期转换工具类
 import { formatDate } from "@/util/Date.js";
-import { truncate } from "fs";
 
 export default {
   data() {
@@ -110,9 +109,7 @@ export default {
       classRules: {
         //验证规则
         className: [{ required: true, message: "请输入班级", trigger: "blur" }],
-        courseName: [
-          { required: true, message: "请选择专业", trigger: "change" }
-        ],
+        courseName: [{ required: true, message: "请选择专业", trigger: "change" }],
         userName: [{ required: true, message: "请选择老师", trigger: "change" }]
       }
     };
@@ -235,7 +232,7 @@ export default {
             .then(res => {
               let code = res.data.code; //返回代码
               let message = res.data.message; //消息
-              if (res.data.code == 1) {
+              if (code == 1) {
                 let index = _this.classForm.index;
                 _this.tableData[index].className = this.classForm.className;
                 _this.tableData[index].courseName = this.classForm.courseName;
@@ -361,7 +358,7 @@ export default {
             .then(res => {
               let code = res.data.code; //返回代码
               let message = res.data.message; //消息
-              if (res.data.code == 1) {
+              if (code == 1) {
                 _this.tableData.splice(index,1);          
               }
               _this.formMessage(code,message);
@@ -392,10 +389,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-#entire {
-  max-width: 1000px;
-  /* border: 1px solid #EBEEF5; */
-}
 /deep/ .el-dialog {
   max-width: 336px;
 }
