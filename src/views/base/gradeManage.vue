@@ -390,6 +390,13 @@ export default {
 
 <style lang="scss" scoped>
 /deep/ .el-dialog {
-  max-width: 336px;
+  max-width: 480px;
+}
+/deep/ .el-select{
+  display: flex;
+  flex: 1;
+}
+/deep/ .el-dialog__body{
+  padding: 30px 20px 0;
 }
 </style>

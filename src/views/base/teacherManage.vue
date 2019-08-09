@@ -126,14 +126,26 @@ export default {
           { required: true, message: "请输入老师姓名", trigger: "blur" }
         ],
         userMobile: [
-          { required: true, message: "请输入手机号", trigger: "blur" }
+          { required: true, message: "请输入手机号", trigger: "blur" },
+          {
+            min: 11,
+            max: 11,
+            message: "长度为11个字符",
+            trigger: ["blur", "change"]
+          }
         ],
         userSex: [{ required: true, message: "请选择性别", trigger: "change" }],
         userTypeTypeName: [
           { required: true, message: "请选择角色", trigger: "change" }
         ],
         userPassword: [
-          { required: true, message: "请输入密码", trigger: "blur" }
+          { required: true, message: "请输入密码", trigger: "blur" },
+          {
+            min: 6,
+            max: 18,
+            message: "长度在 6 到 18 个字符",
+            trigger: ["blur", "change"]
+          }
         ]
       }
     };
@@ -285,6 +297,7 @@ export default {
               userPassword: _this.teacherForm.userPassword //密码，长度6~18
             })
             .then(res => {
+              console.log(res);
               let code = res.data.code; //返回代码
               let message = res.data.message; //消息
               let data = res.data.data; //操作成功后，返回给前端有用的数据
@@ -404,6 +417,13 @@ export default {
 
 <style lang="scss" scoped>
 /deep/ .el-dialog {
-  max-width: 336px;
+  max-width: 480px;
+}
+/deep/ .el-select{
+  display: flex;
+  flex: 1;
+}
+/deep/ .el-dialog__body{
+  padding: 30px 20px 0;
 }
 </style>

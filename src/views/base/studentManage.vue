@@ -146,10 +146,22 @@ export default {
           { required: true, message: "请选择生日", trigger: "blur" }
         ],
         stuMobile: [
-          { required: true, message: "请输入手机号", trigger: "blur" }
+          { required: true, message: "请输入手机号", trigger: "blur" },
+          {
+            min: 11,
+            max: 11,
+            message: "长度为11个字符",
+            trigger: ["blur", "change"]
+          }
         ],
         stuPassword: [
-          { required: true, message: "请输入登录密码", trigger: "blur" }
+          { required: true, message: "请输入登录密码", trigger: "blur" },
+          {
+            min: 6,
+            max: 18,
+            message: "长度在 6 到 18 个字符",
+            trigger: ["blur", "change"]
+          }
         ]
       }
     };
@@ -326,6 +338,7 @@ export default {
                 _this.dialogFormVisible = false;
               }
               _this.formMessage(code, message);
+              _this.resetForm(formName);
             })
             .catch(error => {
               console.log(error);
@@ -437,10 +450,23 @@ export default {
 
 <style lang="scss" scoped>
 /deep/ .el-dialog {
-  max-width: 336px;
+  max-width: 480px;
+}
+/deep/ .el-select ,.el-input{
+  display: flex;
+  flex: 1;
+}
+/deep/ .el-date-editor.el-input{
+  width: auto;
+}
+/deep/ .el-dialog__body{
+  padding: 30px 20px 0;
 }
 .breadcrumb{
   text-align: left;
+  /deep/ .el-select{
+    display: inline-block;
+  }
   /deep/ .el-input{
     width: 50%;
     top: -7px;
