@@ -2,11 +2,15 @@
   <!-- 全部学生 -->
   <div>
     <!-- 面包屑 -->
-    <el-breadcrumb>
+    <el-breadcrumb class="breadcrumb">
       <el-breadcrumb-item>
         <a>基础数据</a>
       </el-breadcrumb-item>
       <el-breadcrumb-item>学生管理</el-breadcrumb-item>
+      <!-- 一开始的数据 -->
+      <el-select v-model="selectForm.className" placeholder="请选择" @change="initClass">
+        <el-option v-for="(item,index) in classData" :key="index" :value="item.className"></el-option>
+      </el-select>
     </el-breadcrumb>
     <!-- 表格数据 -->
     <el-table
@@ -123,6 +127,10 @@ export default {
         className: "", //班级名称
         index: 0 //当前点击的下标
       },
+      selectForm: { //作为用户初始的查询
+        className: "web-15班", //班级名称
+        classId: '' //班级编号
+      },
       dialogFormVisible: false, //弹出框是否显示
       submitValue: false, //共用弹出框，true修改，false增加
       formLabelWidth: "80px", //表单lable宽度
@@ -147,8 +155,8 @@ export default {
     };
   },
   mounted() {
-    this.stuManage();
     this.classManage();
+    this.stuManage();
   },
   methods: {
     /**
@@ -156,15 +164,21 @@ export default {
      */
     stuManage() {
       let _this = this;
-      _this.axios
-        .get("/Student/GetClassStudent")
+      let classId = _this.selectForm.classId
+      if(classId){
+        _this.axios
+        .get("/Student/GetClassStudent",{
+          params: {
+            classId: classId
+          }
+        })
         .then(res => {
-          console.log(res);
-          // _this.tableData = res.data;
+          _this.tableData = res.data;
         })
         .catch(error => {
           console.log(error);
         });
+      }
     },
     /**
      * 获取所有的班级信息
@@ -174,16 +188,28 @@ export default {
       _this.axios
         .get("/Class/GetAllClass")
         .then(res => {
-          console.log(res);
           _this.classData = res.data;
+          _this.initClass(_this.selectForm.className);
         })
         .catch(error => {
           console.log(error);
         });
     },
     /**
+     * 用户初始查询下拉框返回位置
+     * @param {String} className 班级选择框数据
+     */
+    initClass(className) {
+      let _this = this;
+      let index = _this.classData.findIndex(
+        item => item.className == className
+      );
+      _this.selectForm.classId = _this.classData[index].classId;
+      _this.stuManage()
+    },
+    /**
      * 班级名称下拉框返回位置
-     * @param {String} className 专业选择框数据
+     * @param {String} className 班级选择框数据
      */
     selectClass(className) {
       let _this = this;
@@ -198,7 +224,6 @@ export default {
      * @param {Obj} row 表格当前对象
      */
     handleEdit(index, row) {
-      console.log(index, row);
       let _this = this;
       this.submitValue = true;
       _this.dialogFormVisible = true;
@@ -247,7 +272,6 @@ export default {
             .then(res => {
               let code = res.data.code; //返回代码
               let message = res.data.message; //消息
-              console.log(res);
               if (code == 1) {
                 let index = _this.studentForm.index;
                 _this.tableData[index].stuName = this.studentForm.stuName;
@@ -291,12 +315,14 @@ export default {
               stuSex: _this.studentForm.stuSex //性别
             })
             .then(res => {
-              console.log(res);
               let code = res.data.code; //返回代码
               let message = res.data.message; //消息
               let data = res.data.data; //操作成功后，返回给前端有用的数据
               if (code == 1) {
-                _this.tableData.push(res.data.data);
+                // 如果当前用户查询的班级与用户添加的班级是相同，才可以添加到数组中
+                if(_this.selectForm.classId == _this.studentForm.stuClassId){
+                  _this.tableData.push(res.data.data);
+                }
                 _this.dialogFormVisible = false;
               }
               _this.formMessage(code, message);
@@ -412,5 +438,13 @@ export default {
 <style lang="scss" scoped>
 /deep/ .el-dialog {
   max-width: 336px;
+}
+.breadcrumb{
+  text-align: left;
+  /deep/ .el-input{
+    width: 50%;
+    top: -7px;
+    left: 5px;
+  }
 }
 </style>
