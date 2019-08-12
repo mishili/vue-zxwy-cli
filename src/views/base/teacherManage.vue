@@ -2,11 +2,20 @@
   <!-- 全部老师 -->
   <div>
     <!-- 面包屑 -->
-    <el-breadcrumb>
+    <el-breadcrumb class="breadcrumb">
       <el-breadcrumb-item>
         <a>基础数据</a>
       </el-breadcrumb-item>
       <el-breadcrumb-item>老师管理</el-breadcrumb-item>
+      <template>
+        <el-radio-group v-model="radio" @change="tableData = tableFilter">
+          <el-radio
+            v-for="(item,index) in radioData"
+            :key="index"
+            :label="item.userTypeTypeName"
+          >{{ item.userTypeTypeName}}</el-radio>
+        </el-radio-group>
+      </template>
     </el-breadcrumb>
     <!-- 表格数据 -->
     <el-table
@@ -36,12 +45,14 @@
       </el-table-column>
     </el-table>
     <el-row style="margin-top:20px;">
-      <el-dialog
-        :title="submitValue?'修 改 老 师':'增 加 老 师'"
-        :visible.sync="dialogFormVisible"
-        classCourseId="el-dialog"
-      >
-        <el-form :model="teacherForm" status-icon :rules="teacherRules" ref="teacherForm">
+      <el-dialog :title="submitValue?'修 改 老 师':'增 加 老 师'" :visible.sync="dialogFormVisible">
+        <el-form
+          :model="teacherForm"
+          status-icon
+          :rules="teacherRules"
+          ref="teacherForm"
+          v-if="dialogFormVisible"
+        >
           <el-form-item label="老师名称" prop="userName" :label-width="formLabelWidth">
             <el-input v-model="teacherForm.userName" autocomplete="off"></el-input>
           </el-form-item>
@@ -57,8 +68,7 @@
           <el-form-item label="密码" prop="userPassword" :label-width="formLabelWidth">
             <el-input v-model="teacherForm.userPassword" autocomplete="off"></el-input>
           </el-form-item>
-          <!-- 增加老师没有身份选择 使用v-if 有验证规则-->
-          <el-form-item v-if="submitValue" label="角色" prop="userTypeTypeName" :label-width="formLabelWidth">
+          <el-form-item label="角色" prop="userTypeTypeName" :label-width="formLabelWidth">
             <el-select
               v-model="teacherForm.userTypeTypeName"
               placeholder="请选择"
@@ -86,9 +96,6 @@
 </template>
 
 <script>
-// 引用日期转换工具类
-import { formatDate } from "@/util/Date.js";
-
 export default {
   data() {
     return {
@@ -106,7 +113,15 @@ export default {
           disableDelete: true //禁用删除 true：禁用 false：可用
         }
       ],
+      filterData: [], //用于过滤转换
       rollData: [], //角色数据
+      radioData: [  //单选组数据
+        {
+          userTypeId: 0,
+          userTypeTypeName: '全部'
+        }
+      ],
+      radio: "全部", //单选框默认选择
       teacherForm: {
         userUid: "", //要修改的用户标识符
         userName: "", //修改老师名称
@@ -164,6 +179,7 @@ export default {
         .get("/User/GetTeachers")
         .then(res => {
           _this.tableData = res.data;
+          _this.filterData = res.data;
         })
         .catch(error => {
           console.log(error);
@@ -178,6 +194,7 @@ export default {
         .get("/UserType/GetUserRoles")
         .then(res => {
           _this.rollData = res.data;
+          _this.radioData.push(...res.data);
         })
         .catch(error => {
           console.log(error);
@@ -218,7 +235,7 @@ export default {
       _this.submitValue = false;
       _this.dialogFormVisible = true;
       _this.teacherForm.userUid = 0;
-      _this.teacherForm.userName = "";
+      _this.teacherForm.userName = "zxczx";
       _this.teacherForm.userMobile = "15178784023";
       _this.teacherForm.userUserTypeId = "";
       _this.teacherForm.userTypeTypeName = "";
@@ -234,24 +251,26 @@ export default {
       _this.$refs[formName].validate(valid => {
         if (valid) {
           _this.axios
-            .post("/User/ModifyTeacher", {
-              userUid: _this.teacherForm.userUid, // 要修改的用户标识符
-              userName: _this.teacherForm.userName, //要修改的名称
-              userMobile: _this.teacherForm.userMobile, //要修改的手机号，11位手机号
-              userSex: _this.teacherForm.userSex, //要修改的性别，男|女
-              userUserTypeId: _this.teacherForm.userUserTypeId, //角色
-              userPassword: _this.teacherForm.userPassword //要修改的密码
-            })
+            // .post("/User/ModifyTeacher", {
+            //   userUid: _this.teacherForm.userUid, // 要修改的用户标识符
+            //   userName: _this.teacherForm.userName, //要修改的名称
+            //   userMobile: _this.teacherForm.userMobile, //要修改的手机号，11位手机号
+            //   userSex: _this.teacherForm.userSex, //要修改的性别，男|女
+            //   userUserTypeId: _this.teacherForm.userUserTypeId, //角色
+            //   userPassword: _this.teacherForm.userPassword //要修改的密码
+            // })
+            .post("/User/ModifyTeacher", _this.teacherForm)
             .then(res => {
               let code = res.data.code; //返回代码
               let message = res.data.message; //消息
+              console.log(res);
               if (code == 1) {
                 let index = _this.teacherForm.index;
-                _this.tableData[index].userName = this.teacherForm.userName;
-                _this.tableData[index].userMobile = this.teacherForm.userMobile;
-                _this.tableData[index].userSex = this.teacherForm.userSex;
-                _this.tableData[index].userTypeTypeName = this.teacherForm.userTypeTypeName;
-                _this.tableData[index].userPassword = this.teacherForm.userPassword;
+                _this.tableData[index].userName = _this.teacherForm.userName;
+                _this.tableData[index].userMobile = _this.teacherForm.userMobile;
+                _this.tableData[index].userSex = _this.teacherForm.userSex;
+                _this.tableData[index].userTypeTypeName = _this.teacherForm.userTypeTypeName;
+                _this.tableData[index].userPassword = _this.teacherForm.userPassword;
                 _this.dialogFormVisible = false;
               }
               _this.formMessage(code, message);
@@ -276,33 +295,22 @@ export default {
       let _this = this;
       _this.$refs[formName].validate(valid => {
         if (valid) {
-          //使用application/json方式提交
-            // _this.axios({
-            //   url: "/User/AddTeacher",
-            //   method: "post",
-            //   data: {
-            //     userName: _this.teacherForm.userName, //用户名，不能为空
-            //     userMobile: _this.teacherForm.userMobile, //手机号，长度11位
-            //     userSex: _this.teacherForm.userSex, //性别，男|女
-            //     userPassword: _this.teacherForm.userPassword //密码，长度6~18
-            //   },
-            //   headers: {
-            //     "Content-Type": "application/json"
-            //   }
-            // })
-            _this.axios.post("/User/AddTeacher", {
-              userName: _this.teacherForm.userName, //用户名，不能为空
-              userMobile: _this.teacherForm.userMobile, //手机号，长度11位
-              userSex: _this.teacherForm.userSex, //性别，男|女
-              userPassword: _this.teacherForm.userPassword //密码，长度6~18
-            })
+          // _this.axios.post("/User/AddTeacher", {
+          //   userName: _this.teacherForm.userName, //用户名，不能为空
+          //   userMobile: _this.teacherForm.userMobile, //手机号，长度11位
+          //   userSex: _this.teacherForm.userSex, //性别，男|女
+          //   userUserTypeId: _this.teacherForm.userUserTypeId, //老师角色编号
+          //   userPassword: _this.teacherForm.userPassword //密码，长度6~18
+          // })
+          _this.axios
+            .post("/User/AddTeacher", _this.teacherForm)
             .then(res => {
-              console.log(res);
               let code = res.data.code; //返回代码
               let message = res.data.message; //消息
               let data = res.data.data; //操作成功后，返回给前端有用的数据
               if (code == 1) {
-                _this.tableData.unshift(res.data.data);
+                data.userTypeTypeName = _this.teacherForm.userTypeTypeName;
+                _this.tableData.unshift(data);
                 _this.dialogFormVisible = false;
               }
               _this.formMessage(code, message);
@@ -377,12 +385,14 @@ export default {
         })
         .then(() => {
           _this.axios
-            .get("/User/RemoveTeacher", {
+            // 删除老师使用query参数
+            .post("/User/RemoveTeacher", null, {
               params: {
                 uid: row.userUid
               }
             })
             .then(res => {
+              console.log(res);
               let code = res.data.code; //返回代码
               let message = res.data.message; //消息
               if (code == 1) {
@@ -402,28 +412,36 @@ export default {
         });
     }
   },
-  filters: {
-    /**
-     * 日期格式转换
-     * @param {String} time 传入的时间
-     */
-    formatDate(time) {
-      let date = new Date(time);
-      return formatDate(date, "yyyy年MM月dd日");
+  computed: {
+    // 过滤计算
+    tableFilter(){
+      let _this = this;
+      let table = _this.filterData;
+      let typeName = _this.radioData[0].userTypeTypeName;
+      if(_this.radio==typeName){
+        return _this.filterData;
+      }
+      return table.filter(taData => taData.userTypeTypeName == _this.radio)
     }
   }
 };
 </script>
 
 <style lang="scss" scoped>
+.breadcrumb {
+  text-align: left;
+  /deep/ .el-radio {
+    margin-right: 20px;
+  }
+}
 /deep/ .el-dialog {
   max-width: 480px;
 }
-/deep/ .el-select{
+/deep/ .el-select {
   display: flex;
   flex: 1;
 }
-/deep/ .el-dialog__body{
+/deep/ .el-dialog__body {
   padding: 30px 20px 0;
 }
 </style>

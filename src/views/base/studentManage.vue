@@ -49,9 +49,8 @@
       <el-dialog
         :title="submitValue?'修 改 学 生':'增 加 学 生'"
         :visible.sync="dialogFormVisible"
-        classCourseId="el-dialog"
       >
-        <el-form :model="studentForm" status-icon :rules="studentRules" ref="studentForm">
+        <el-form :model="studentForm" status-icon :rules="studentRules" ref="studentForm" v-if="dialogFormVisible">
           <el-form-item label="学生名称" prop="stuName" :label-width="formLabelWidth">
             <el-input v-model="studentForm.stuName" autocomplete="off"></el-input>
           </el-form-item>
@@ -201,7 +200,9 @@ export default {
         .get("/Class/GetAllClass")
         .then(res => {
           _this.classData = res.data;
-          _this.initClass(_this.selectForm.className);
+          let className1 = _this.classData[0].className; //默认数据为查询到的班级位置1
+          _this.selectForm.className = className1;
+          _this.initClass(className1);
         })
         .catch(error => {
           console.log(error);
@@ -272,26 +273,27 @@ export default {
       _this.$refs[formName].validate(valid => {
         if (valid) {
           _this.axios
-            .post("/Student/ModifyStudent", {
-              stuUid: _this.studentForm.stuUid, // 要修改学生的唯一标识符
-              stuName: _this.studentForm.stuName, //要修改的名称
-              stuBirthDay: _this.studentForm.stuBirthDay, //要修改的生日
-              stuClassId: _this.studentForm.stuClassId, //班级编号
-              stuMobile: _this.studentForm.stuMobile, //要修改的手机号
-              stuPassword: _this.studentForm.stuPassword, //要修改的密码
-              stuSex: _this.studentForm.stuSex, //要修改的性别
-            })
+            // .post("/Student/ModifyStudent", {
+            //   stuUid: _this.studentForm.stuUid, // 要修改学生的唯一标识符
+            //   stuName: _this.studentForm.stuName, //要修改的名称
+            //   stuBirthDay: _this.studentForm.stuBirthDay, //要修改的生日
+            //   stuClassId: _this.studentForm.stuClassId, //班级编号
+            //   stuMobile: _this.studentForm.stuMobile, //要修改的手机号
+            //   stuPassword: _this.studentForm.stuPassword, //要修改的密码
+            //   stuSex: _this.studentForm.stuSex, //要修改的性别
+            // })
+            .post("/Student/ModifyStudent", _this.studentForm)
             .then(res => {
               let code = res.data.code; //返回代码
               let message = res.data.message; //消息
               if (code == 1) {
                 let index = _this.studentForm.index;
-                _this.tableData[index].stuName = this.studentForm.stuName;
-                _this.tableData[index].stuBirthDay = this.studentForm.stuBirthDay;
-                _this.tableData[index].stuMobile = this.studentForm.stuMobile;
-                _this.tableData[index].stuPassword = this.studentForm.stuPassword;
-                _this.tableData[index].stuSex = this.studentForm.stuSex;
-                _this.tableData[index].className = this.studentForm.className;
+                _this.tableData[index].stuName = _this.studentForm.stuName;
+                _this.tableData[index].stuBirthDay = _this.studentForm.stuBirthDay;
+                _this.tableData[index].stuMobile = _this.studentForm.stuMobile;
+                _this.tableData[index].stuPassword = _this.studentForm.stuPassword;
+                _this.tableData[index].stuSex = _this.studentForm.stuSex;
+                _this.tableData[index].className = _this.studentForm.className;
                 _this.tableData[index].stuAge = res.data.data;  //后台会返回年龄
                 _this.dialogFormVisible = false;
               }
@@ -318,14 +320,15 @@ export default {
       _this.$refs[formName].validate(valid => {
         if (valid) {
           _this.axios
-            .post("/Student/AddStudent", {
-              stuName: _this.studentForm.stuName, //学生名称
-              stuClassId: _this.studentForm.stuClassId, //班级编号
-              stuBirthDay: _this.studentForm.stuBirthDay, //生日
-              stuMobile: _this.studentForm.stuMobile, //手机号
-              stuPassword: _this.studentForm.stuPassword, //登录密码
-              stuSex: _this.studentForm.stuSex //性别
-            })
+            // .post("/Student/AddStudent", {
+            //   stuName: _this.studentForm.stuName, //学生名称
+            //   stuClassId: _this.studentForm.stuClassId, //班级编号
+            //   stuBirthDay: _this.studentForm.stuBirthDay, //生日
+            //   stuMobile: _this.studentForm.stuMobile, //手机号
+            //   stuPassword: _this.studentForm.stuPassword, //登录密码
+            //   stuSex: _this.studentForm.stuSex //性别
+            // })
+            .post("/Student/AddStudent", _this.studentForm)
             .then(res => {
               let code = res.data.code; //返回代码
               let message = res.data.message; //消息
@@ -333,7 +336,7 @@ export default {
               if (code == 1) {
                 // 如果当前用户查询的班级与用户添加的班级是相同，才可以添加到数组中
                 if(_this.selectForm.classId == _this.studentForm.stuClassId){
-                  _this.tableData.push(res.data.data);
+                  _this.tableData.push(data);
                 }
                 _this.dialogFormVisible = false;
               }

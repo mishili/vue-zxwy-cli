@@ -42,7 +42,7 @@
       </el-table-column>
     </el-table>
     <el-row style="margin-top:20px;">
-      <el-dialog :title="submitValue?'修 改 班 级':'增 加 班 级'" :visible.sync="dialogFormVisible" classCourseId="el-dialog">
+      <el-dialog :title="submitValue?'修 改 班 级':'增 加 班 级'" :visible.sync="dialogFormVisible">
         <el-form :model="classForm" status-icon :rules="classRules" ref="classForm">
           <el-form-item label="班级名称" prop="className" :label-width="formLabelWidth">
             <el-input v-model="classForm.className" autocomplete="off"></el-input>
@@ -223,20 +223,21 @@ export default {
       _this.$refs[formName].validate(valid => {
         if (valid) {
           _this.axios
-            .post("/Class/ModifyClass", {
-              classId: _this.classForm.classId, //要修改的班级主键
-              className: _this.classForm.className, //要修改的班级名称
-              classCourseId: _this.classForm.classCourseId, //课程编号
-              classTeacherId: _this.classForm.classTeacherId //老师编号
-            })
+            // .post("/Class/ModifyClass", {
+            //   classId: _this.classForm.classId, //要修改的班级主键
+            //   className: _this.classForm.className, //要修改的班级名称
+            //   classCourseId: _this.classForm.classCourseId, //课程编号
+            //   classTeacherId: _this.classForm.classTeacherId //老师编号
+            // })
+            .post("/Class/ModifyClass", _this.classForm)
             .then(res => {
               let code = res.data.code; //返回代码
               let message = res.data.message; //消息
               if (code == 1) {
                 let index = _this.classForm.index;
-                _this.tableData[index].className = this.classForm.className;
-                _this.tableData[index].courseName = this.classForm.courseName;
-                _this.tableData[index].userName = this.classForm.userName;
+                _this.tableData[index].className = _this.classForm.className;
+                _this.tableData[index].courseName = _this.classForm.courseName;
+                _this.tableData[index].userName = _this.classForm.userName;
                 _this.dialogFormVisible = false;
               }
               _this.formMessage(code,message);
@@ -262,11 +263,12 @@ export default {
       _this.$refs[formName].validate(valid => {
         if (valid) {
           _this.axios
-            .post("/Class/AddClass", {
-              className: _this.classForm.className, //班级名称
-              classCourseId: _this.classForm.classCourseId, //课程编号
-              classTeacherId: _this.classForm.classTeacherId //老师编号
-            })
+            // .post("/Class/AddClass", {
+            //   className: _this.classForm.className, //班级名称
+            //   classCourseId: _this.classForm.classCourseId, //课程编号
+            //   classTeacherId: _this.classForm.classTeacherId //老师编号
+            // })
+            .post("/Class/AddClass", _this.classForm)
             .then(res => {
               let code = res.data.code; //返回代码
               let message = res.data.message; //消息

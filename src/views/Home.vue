@@ -89,11 +89,10 @@
           <el-avatar :size="50" :src="circleUrl" style="margin-left: 15px"></el-avatar>
         </el-header>
         <el-main>
-          <!-- 路由视图 -->
+          <!-- 路由视图 keep-alive会缓存用户视图位置-->
           <keep-alive>
-              <router-view/>
+              <router-view name="sidebar"/>
           </keep-alive>
-          <router-view name="sidebar"/>
         </el-main>
       </el-container>
     </el-container>
@@ -124,6 +123,10 @@ export default {
             {
               name: "老师管理",
               path: "/teacherManage"
+            },
+            {
+              name: "角色管理",
+              path: "/roleManage"
             },
             {
               name: "班级管理",
