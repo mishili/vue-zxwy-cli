@@ -96,6 +96,10 @@
 </template>
 
 <script>
+// 引用工具类
+import Base from "@/util/Base64";
+import Cookie from "@/util/Cookie";
+
 export default {
   data() {
     return {
@@ -115,10 +119,11 @@ export default {
       ],
       filterData: [], //用于过滤转换
       rollData: [], //角色数据
-      radioData: [  //单选组数据
+      radioData: [
+        //单选组数据
         {
           userTypeId: 0,
-          userTypeTypeName: '全部'
+          userTypeTypeName: "全部"
         }
       ],
       radio: "全部", //单选框默认选择
@@ -132,6 +137,8 @@ export default {
         userPassword: "", //密码
         index: 0 //当前点击的下标
       },
+      activeid: "", //当前用户的操作判断 ,id是唯一的
+      activeName: "", //更改用户名,上一个
       dialogFormVisible: false, //弹出框是否显示
       submitValue: false, //共用弹出框，true修改，false增加
       formLabelWidth: "80px", //表单lable宽度
@@ -228,6 +235,8 @@ export default {
       _this.teacherForm.userTypeTypeName = row.userTypeTypeName;
       _this.teacherForm.userPassword = row.userPassword;
       _this.teacherForm.index = index;
+      _this.activeid = _this.teacherForm.userUid;
+      _this.activeName = _this.teacherForm.userName;
     },
     // 增加老师 数据初始化
     resetClass() {
@@ -251,19 +260,10 @@ export default {
       _this.$refs[formName].validate(valid => {
         if (valid) {
           _this.axios
-            // .post("/User/ModifyTeacher", {
-            //   userUid: _this.teacherForm.userUid, // 要修改的用户标识符
-            //   userName: _this.teacherForm.userName, //要修改的名称
-            //   userMobile: _this.teacherForm.userMobile, //要修改的手机号，11位手机号
-            //   userSex: _this.teacherForm.userSex, //要修改的性别，男|女
-            //   userUserTypeId: _this.teacherForm.userUserTypeId, //角色
-            //   userPassword: _this.teacherForm.userPassword //要修改的密码
-            // })
             .post("/User/ModifyTeacher", _this.teacherForm)
             .then(res => {
               let code = res.data.code; //返回代码
               let message = res.data.message; //消息
-              console.log(res);
               if (code == 1) {
                 let index = _this.teacherForm.index;
                 _this.tableData[index].userName = _this.teacherForm.userName;
@@ -273,7 +273,11 @@ export default {
                 _this.tableData[index].userPassword = _this.teacherForm.userPassword;
                 _this.dialogFormVisible = false;
               }
-              _this.formMessage(code, message);
+              if (_this.activeid == sessionStorage.getItem("userUid")) {
+                _this.sessionMessag(1);
+              } else {
+                _this.formMessage(code, message);
+              }
             })
             .catch(error => {
               console.log(error);
@@ -286,6 +290,49 @@ export default {
           return false;
         }
       });
+    },
+    /**
+     * 操作当前登录用户的反馈提示
+     * @param {Number} id 1 修改 2 删除
+     */
+    sessionMessag(id) {
+      let _this = this;
+      let userName = _this.teacherForm.userName;
+      let userMobile = _this.teacherForm.userMobile;
+      let userPassword = _this.teacherForm.userPassword;
+      var name = Base.decode(Cookie.getCookie("userName"));
+      var pass = Base.decode(Cookie.getCookie("userPass"));
+      switch (id) {
+        case 1:
+          if (userMobile != name || userPassword != pass) {
+            if (userName != _this.activeName) {
+              _this.$emit("setName", userName);
+            }
+            routerPush("修改");
+            return;
+          }
+          if (userName != _this.activeName) {
+            sessionStorage.setItem("userName", userName);
+            _this.$emit("setName", userName);
+            _this.$message({
+              message:"修改成功",
+              type: "success"
+            });
+          }
+          break;
+        case 2:
+          routerPush("删除");
+          break;
+      }
+      function routerPush(mesg) {
+        _this.$message({
+          message: mesg+"成功,需重新登录,3秒自动后跳转",
+          type: "success"
+        });
+        setTimeout(function() {
+          _this.$router.push("/");
+        }, 3000);
+      }
     },
     /**
      * 增加老师
@@ -398,7 +445,11 @@ export default {
               if (code == 1) {
                 _this.tableData.splice(index, 1);
               }
-              _this.formMessage(code, message);
+              if (row.userUid == sessionStorage.getItem("userUid")) {
+                _this.sessionMessag(2);
+              } else {
+                _this.formMessage(code, message);
+              }
             })
             .catch(error => {
               console.log(error);
@@ -414,14 +465,14 @@ export default {
   },
   computed: {
     // 过滤计算
-    tableFilter(){
+    tableFilter() {
       let _this = this;
       let table = _this.filterData;
       let typeName = _this.radioData[0].userTypeTypeName;
-      if(_this.radio==typeName){
+      if (_this.radio == typeName) {
         return _this.filterData;
       }
-      return table.filter(taData => taData.userTypeTypeName == _this.radio)
+      return table.filter(taData => taData.userTypeTypeName == _this.radio);
     }
   }
 };

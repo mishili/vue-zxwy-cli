@@ -38,7 +38,6 @@
 // 引用工具类
 import Base from "@/util/Base64";
 import Cookie from "@/util/Cookie";
-// import { setTimeout } from 'timers';
 
 export default {
   name: "logReg",

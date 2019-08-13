@@ -24,7 +24,7 @@
       <el-table-column prop="className" label="班级名称" sortable></el-table-column>
       <el-table-column prop="stuName" label="学生姓名" sortable></el-table-column>
       <el-table-column prop="stuAge" label="学生年龄" sortable></el-table-column>
-      <el-table-column label="生日" width="180" sortable>
+      <el-table-column label="生日" width="130" sortable>
         <template slot-scope="scope">
           <span>{{ scope.row.stuBirthDay | formatDate }}</span>
         </template>
@@ -273,15 +273,6 @@ export default {
       _this.$refs[formName].validate(valid => {
         if (valid) {
           _this.axios
-            // .post("/Student/ModifyStudent", {
-            //   stuUid: _this.studentForm.stuUid, // 要修改学生的唯一标识符
-            //   stuName: _this.studentForm.stuName, //要修改的名称
-            //   stuBirthDay: _this.studentForm.stuBirthDay, //要修改的生日
-            //   stuClassId: _this.studentForm.stuClassId, //班级编号
-            //   stuMobile: _this.studentForm.stuMobile, //要修改的手机号
-            //   stuPassword: _this.studentForm.stuPassword, //要修改的密码
-            //   stuSex: _this.studentForm.stuSex, //要修改的性别
-            // })
             .post("/Student/ModifyStudent", _this.studentForm)
             .then(res => {
               let code = res.data.code; //返回代码
@@ -320,14 +311,6 @@ export default {
       _this.$refs[formName].validate(valid => {
         if (valid) {
           _this.axios
-            // .post("/Student/AddStudent", {
-            //   stuName: _this.studentForm.stuName, //学生名称
-            //   stuClassId: _this.studentForm.stuClassId, //班级编号
-            //   stuBirthDay: _this.studentForm.stuBirthDay, //生日
-            //   stuMobile: _this.studentForm.stuMobile, //手机号
-            //   stuPassword: _this.studentForm.stuPassword, //登录密码
-            //   stuSex: _this.studentForm.stuSex //性别
-            // })
             .post("/Student/AddStudent", _this.studentForm)
             .then(res => {
               let code = res.data.code; //返回代码

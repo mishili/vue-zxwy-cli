@@ -223,12 +223,6 @@ export default {
       _this.$refs[formName].validate(valid => {
         if (valid) {
           _this.axios
-            // .post("/Class/ModifyClass", {
-            //   classId: _this.classForm.classId, //要修改的班级主键
-            //   className: _this.classForm.className, //要修改的班级名称
-            //   classCourseId: _this.classForm.classCourseId, //课程编号
-            //   classTeacherId: _this.classForm.classTeacherId //老师编号
-            // })
             .post("/Class/ModifyClass", _this.classForm)
             .then(res => {
               let code = res.data.code; //返回代码
@@ -263,11 +257,6 @@ export default {
       _this.$refs[formName].validate(valid => {
         if (valid) {
           _this.axios
-            // .post("/Class/AddClass", {
-            //   className: _this.classForm.className, //班级名称
-            //   classCourseId: _this.classForm.classCourseId, //课程编号
-            //   classTeacherId: _this.classForm.classTeacherId //老师编号
-            // })
             .post("/Class/AddClass", _this.classForm)
             .then(res => {
               let code = res.data.code; //返回代码

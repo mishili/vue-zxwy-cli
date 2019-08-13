@@ -3,7 +3,7 @@
     <el-container style="height: 100%;position: relative;">
       <!-- 侧边栏 -->
       <el-aside width="auto" style="background-color: #545c64">
-        <el-row class="pic" >
+        <el-row class="pic">
           <p>
             <img src="../assets/logo.png">
           </p>
@@ -90,9 +90,11 @@
         </el-header>
         <el-main>
           <!-- 路由视图 keep-alive会缓存用户视图位置-->
-          <keep-alive>
-              <router-view name="sidebar"/>
-          </keep-alive>
+          <el-card class="box-card">
+            <keep-alive>
+              <router-view name="sidebar" @setName="getName"/>
+            </keep-alive>
+          </el-card>
         </el-main>
       </el-container>
     </el-container>
@@ -106,8 +108,9 @@ export default {
     return {
       activeindex: "/home", //当前激活菜单的 Path
       isCollapse: false, //侧边栏是否收起
-      userName: '王大胖',//用作用户名
-      circleUrl:  //用作用户头像
+      userName: "王大胖", //用作用户名
+      //用作用户头像
+      circleUrl:
         "https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png",
       asideTion: [
         //侧边栏动态内容
@@ -171,8 +174,8 @@ export default {
         //tab标签页内容
         {
           title: "首页",
-          name: "1",//内容中表示位置
-          path: '/home'
+          name: "1", //内容中表示位置
+          path: "/home"
         }
       ],
       tabIndex: 1 //用于添加tab标签页时,从name=1开始,因为一开始有首页
@@ -180,25 +183,17 @@ export default {
   },
   created() {
     let _this = this;
-    // 侧边栏结构不同,用option自己拼接成单独数组对象 //无用
-    // _this.asideTion.forEach(item => {
-    //   _this.asideTionList.push(...item.option);
-    //   // item.option.forEach(item => {
-    //   //   _this.asideTionList.push(item);
-    //   // });
-    // });
+    // 用户名
     _this.userName = sessionStorage.getItem("userName");
-    
-    var getTabList = JSON.parse(sessionStorage.getItem("editableTabs")); //得到存储的tab内容
+    // 得到存储的tab内容
+    var getTabList = JSON.parse(sessionStorage.getItem("editableTabs"));
     var getTabName = sessionStorage.getItem("TabName"); //得到存储的tab位置name
     if (getTabList && getTabName) {
       //如果存在sessionStorage数据,改变其结果
       _this.editableTabs = getTabList;
       _this.editableTabsValue = getTabName;
       _this.tabIndex = getTabList[getTabList.length - 1].name;
-      let index = _this.editableTabs.findIndex(
-        item => item.name == getTabName
-      );
+      let index = _this.editableTabs.findIndex(item => item.name == getTabName);
       _this.activeindex = getTabList[index].path;
     }
   },
@@ -208,7 +203,7 @@ export default {
      * @param {String} name 侧边栏标题
      * @param {String} path 侧边栏路径
      */
-    addTab(name,path) {
+    addTab(name, path) {
       let _this = this;
       function checkAdult(ediTabTittle) {
         //点击时查询传入name的下标
@@ -272,14 +267,12 @@ export default {
       let _this = this;
       _this.editableTabsValue = name; //点击后tab标签页默认位置对应改变
       //返回查询name的下标
-      let index = _this.editableTabs.findIndex(
-        item => item.name == name
-      );
+      let index = _this.editableTabs.findIndex(item => item.name == name);
       // 侧边栏菜单默认打开位置
       _this.activeindex = _this.editableTabs[index].path;
       //使用replace ，跳转到指定url路径，但是history栈中不会有记录，点击返回会跳转到上上个页面
       _this.$router.replace(_this.activeindex);
-      
+
       //操作时存储用户操作的tab内容
       sessionStorage.setItem(
         "editableTabs",
@@ -290,11 +283,11 @@ export default {
     },
     /**
      * 详情点击
-     * @param {String} command 详情点击 通过相应的菜单项 key 
+     * @param {String} command 详情点击 通过相应的菜单项 key
      */
-    handleCommand(command){
+    handleCommand(command) {
       let _this = this;
-      if(command=="exit"){
+      if (command == "exit") {
         _this.exit();
       }
     },
@@ -308,6 +301,13 @@ export default {
         message: "退出登录成功",
         type: "success"
       });
+    },
+    /**
+     * 获取当前用户修改的用户名
+     */
+    getName(name) {
+      let _this = this;
+      _this.userName = name;
     }
   }
 };
@@ -406,7 +406,7 @@ export default {
 }
 // 侧边栏
 .el-aside {
-  /deep/ .el_item{
+  /deep/ .el_item {
     // display: flex;
     // justify-content: flex-start;
     // align-items: center;

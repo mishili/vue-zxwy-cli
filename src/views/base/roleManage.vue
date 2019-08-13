@@ -274,16 +274,6 @@ export default {
           });
         });
     }
-  },
-  filters: {
-    /**
-     * 日期格式转换
-     * @param {String} time 传入的时间
-     */
-    formatDate(time) {
-      let date = new Date(time);
-      return formatDate(date, "yyyy年MM月dd日 hh:mm");
-    }
   }
 };
 </script>
