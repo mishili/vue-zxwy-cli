@@ -46,11 +46,14 @@
       </el-table-column>
     </el-table>
     <el-row style="margin-top:20px;">
-      <el-dialog
-        :title="submitValue?'修 改 学 生':'增 加 学 生'"
-        :visible.sync="dialogFormVisible"
-      >
-        <el-form :model="studentForm" status-icon :rules="studentRules" ref="studentForm" v-if="dialogFormVisible">
+      <el-dialog :title="submitValue?'修 改 学 生':'增 加 学 生'" :visible.sync="dialogFormVisible">
+        <el-form
+          :model="studentForm"
+          status-icon
+          :rules="studentRules"
+          ref="studentForm"
+          v-if="dialogFormVisible"
+        >
           <el-form-item label="学生名称" prop="stuName" :label-width="formLabelWidth">
             <el-input v-model="studentForm.stuName" autocomplete="off"></el-input>
           </el-form-item>
@@ -126,9 +129,10 @@ export default {
         className: "", //班级名称
         index: 0 //当前点击的下标
       },
-      selectForm: { //作为用户初始的查询
+      selectForm: {
+        //作为用户初始的查询
         className: "web-15班", //班级名称
-        classId: '' //班级编号
+        classId: "" //班级编号
       },
       dialogFormVisible: false, //弹出框是否显示
       submitValue: false, //共用弹出框，true修改，false增加
@@ -175,20 +179,20 @@ export default {
      */
     stuManage() {
       let _this = this;
-      let classId = _this.selectForm.classId
-      if(classId){
+      let classId = _this.selectForm.classId;
+      if (classId) {
         _this.axios
-        .get("/Student/GetClassStudent",{
-          params: {
-            classId: classId
-          }
-        })
-        .then(res => {
-          _this.tableData = res.data;
-        })
-        .catch(error => {
-          console.log(error);
-        });
+          .get("/Student/GetClassStudent", {
+            params: {
+              classId: classId
+            }
+          })
+          .then(res => {
+            _this.tableData = res.data;
+          })
+          .catch(error => {
+            console.log(error);
+          });
       }
     },
     /**
@@ -218,7 +222,7 @@ export default {
         item => item.className == className
       );
       _this.selectForm.classId = _this.classData[index].classId;
-      _this.stuManage()
+      _this.stuManage();
     },
     /**
      * 班级名称下拉框返回位置
@@ -242,7 +246,7 @@ export default {
       _this.dialogFormVisible = true;
       _this.studentForm.stuUid = row.stuUid;
       _this.studentForm.stuName = row.stuName;
-      _this.studentForm.stuClassId = row.stuClassId;
+      _this.studentForm.stuClassId = row.classId;
       _this.studentForm.stuBirthDay = row.stuBirthDay;
       _this.studentForm.stuMobile = row.stuMobile;
       _this.studentForm.stuPassword = row.stuPassword;
@@ -279,13 +283,18 @@ export default {
               let message = res.data.message; //消息
               if (code == 1) {
                 let index = _this.studentForm.index;
-                _this.tableData[index].stuName = _this.studentForm.stuName;
-                _this.tableData[index].stuBirthDay = _this.studentForm.stuBirthDay;
-                _this.tableData[index].stuMobile = _this.studentForm.stuMobile;
-                _this.tableData[index].stuPassword = _this.studentForm.stuPassword;
-                _this.tableData[index].stuSex = _this.studentForm.stuSex;
-                _this.tableData[index].className = _this.studentForm.className;
-                _this.tableData[index].stuAge = res.data.data;  //后台会返回年龄
+                // 修改的班级与查询的班级不相等,则删除
+                if (_this.selectForm.classId == _this.studentForm.stuClassId) {
+                  _this.tableData[index].stuName = _this.studentForm.stuName;
+                  _this.tableData[index].stuBirthDay = _this.studentForm.stuBirthDay;
+                  _this.tableData[index].stuMobile = this.studentForm.stuMobile;
+                  _this.tableData[index].stuPassword = _this.studentForm.stuPassword;
+                  _this.tableData[index].stuSex = _this.studentForm.stuSex;
+                  _this.tableData[index].className = _this.studentForm.className;
+                  _this.tableData[index].stuAge = res.data.data; //后台会返回年龄
+                }else{
+                  _this.tableData.splice(index,1)
+                }
                 _this.dialogFormVisible = false;
               }
               _this.formMessage(code, message);
@@ -318,7 +327,7 @@ export default {
               let data = res.data.data; //操作成功后，返回给前端有用的数据
               if (code == 1) {
                 // 如果当前用户查询的班级与用户添加的班级是相同，才可以添加到数组中
-                if(_this.selectForm.classId == _this.studentForm.stuClassId){
+                if (_this.selectForm.classId == _this.studentForm.stuClassId) {
                   _this.tableData.push(data);
                 }
                 _this.dialogFormVisible = false;
@@ -438,22 +447,23 @@ export default {
 /deep/ .el-dialog {
   max-width: 480px;
 }
-/deep/ .el-select ,.el-input{
+/deep/ .el-select,
+.el-input {
   display: flex;
   flex: 1;
 }
-/deep/ .el-date-editor.el-input{
+/deep/ .el-date-editor.el-input {
   width: auto;
 }
-/deep/ .el-dialog__body{
+/deep/ .el-dialog__body {
   padding: 30px 20px 0;
 }
-.breadcrumb{
+.breadcrumb {
   text-align: left;
-  /deep/ .el-select{
+  /deep/ .el-select {
     display: inline-block;
   }
-  /deep/ .el-input{
+  /deep/ .el-input {
     width: 50%;
     top: -7px;
     left: 5px;
