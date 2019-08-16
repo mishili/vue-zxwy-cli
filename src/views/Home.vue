@@ -9,8 +9,8 @@
           </p>
           <span v-show="!isCollapse">教学管理系统</span>
         </el-row>
+        <!-- :default-openeds="['1', '2']" -->
         <el-menu
-          :default-openeds="['1', '2']"
           :default-active="activeindex"
           class="el-menu-vertical-demo"
           router
