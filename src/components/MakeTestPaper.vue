@@ -86,7 +86,7 @@ export default {
               let data = res.data;
               if (data.code == 1) {
                 _this.$emit('geNext')
-                data.data = _this.makeForm.testPaperId;
+                sessionStorage.setItem('testPaperId',data.data.testPaperId);
               }
             })
             .catch(error => {

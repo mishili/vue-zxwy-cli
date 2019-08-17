@@ -20,7 +20,7 @@
       </li>
     </ul>
     <el-form-item label="分值" :label-width="formLabelWidth">
-      <el-input-number v-model="choiceForm.num" :min="2" :max="10" label="描述文字"></el-input-number>
+      <el-input-number v-model="choiceForm.tpqScore" :min="5" :max="10" label="描述文字"></el-input-number>
     </el-form-item>
     <el-form-item :label-width="formLabelWidth">
       <el-button round @click="resetForm('choiceForm')">重置</el-button>
@@ -47,10 +47,26 @@ export default {
       liList: ["A", "B", "C", "D", "E", "F"],
       formLabelWidth: "100px", //表单lable宽度
       choiceForm: {
-        num: 2, //分值
-        choiceShow: true,
+        tpqScore: 5, //分值
+        redactShow: true,
         questionTitle: "", //题目的标题
         questionTypeId: 1, //题目的类型 1=选择题 2=填空题 3=问答题
+        chooseQuestion: [
+          {
+            cqOption: "",
+            cqIsRight: false
+          },
+          {
+            cqOption: "",
+            cqIsRight: false
+          }
+        ]
+      },
+      setChoice: {
+        tpqScore: 5,
+        redactShow: true,
+        questionTitle: "",
+        questionTypeId: 1,
         chooseQuestion: [
           {
             cqOption: "",
@@ -99,26 +115,11 @@ export default {
             }
           });
           if (boolen) {
-            _this.$emit("setOption", _this.choiceForm);
+            _this.$emit("setChoice", _this.choiceForm);
             // 重新定义变量,解除绑定
-            let setOption = {
-              num: 2,
-              choiceShow: true,
-              questionTitle: "",
-              questionTypeId: 1,
-              chooseQuestion: [
-                {
-                  cqOption: "",
-                  cqIsRight: false
-                },
-                {
-                  cqOption: "",
-                  cqIsRight: false
-                }
-              ]
-            };
+            let choice = JSON.parse(JSON.stringify(_this.setChoice))
             // 提交成功后重置
-            _this.choiceForm = setOption;
+            _this.choiceForm = choice;
           } else {
             _this.$message({
               message: "最少勾选一个答案",
