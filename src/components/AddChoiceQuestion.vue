@@ -48,10 +48,17 @@ export default {
       formLabelWidth: "100px", //表单lable宽度
       choiceForm: {
         tpqScore: 5, //分值
-        redactShow: true,
         questionTitle: "", //题目的标题
         questionTypeId: 1, //题目的类型 1=选择题 2=填空题 3=问答题
         chooseQuestion: [
+          {
+            cqOption: "",
+            cqIsRight: false
+          },
+          {
+            cqOption: "",
+            cqIsRight: false
+          },
           {
             cqOption: "",
             cqIsRight: false
@@ -64,7 +71,6 @@ export default {
       },
       setChoice: {
         tpqScore: 5,
-        redactShow: true,
         questionTitle: "",
         questionTypeId: 1,
         chooseQuestion: [

@@ -17,7 +17,7 @@
       <make-test-paper @geNext="next"/>
     </div>
     <div class="course1" v-if="active==1">
-      <add-test-paper/>
+      <add-test-paper @geNext="next"/>
     </div>
     <div class="course" v-show="active==2">
       <h1>完成</h1>
@@ -35,7 +35,7 @@ export default {
   },
   data() {
     return {
-      active: 0 //步骤条位置
+      active: 1 //步骤条位置
     };
   },
   methods: {
@@ -43,6 +43,7 @@ export default {
      * 步骤条
      */
     next() {
+      console.log(1111)
       if (this.active++ > 2) this.active = 0;
     }
   }

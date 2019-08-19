@@ -28,7 +28,6 @@ export default {
       formLabelWidth: "100px", //表单lable宽度
       essayForm: {
         tpqScore: 5, //分值
-        redactShow: true,
         questionTitle: "", //题目的标题
         questionTypeId: 3, //题目的类型 1=选择题 2=填空题 3=问答题
         answerQuestion: {
@@ -37,7 +36,6 @@ export default {
       },
       setEssay: { //用于重置
         tpqScore: 5,
-        redactShow: true,
         questionTitle: "",
         questionTypeId: 3,
         answerQuestion: {

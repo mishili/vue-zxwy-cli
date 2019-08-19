@@ -25,16 +25,16 @@
       </div>
       <ol class="add-ol">
         <li v-for="(item,index) in choiceData" :key="index" class="li-number">
-          <span v-show="item.redactShow">{{ item.questionTitle}}</span>
+          <span v-show="item.redactShow">{{ item.tpqQuestion.questionTitle}}</span>
           <el-input
             type="textarea"
             v-show="!item.redactShow"
-            v-model="item.questionTitle"
+            v-model="item.tpqQuestion.questionTitle"
             autocomplete="off"
           ></el-input>
           <el-input-number v-show="item.redactShow" v-model="cancelData1[index].tpqScore" :min="1"/>
           <ul class="ul_choice">
-            <li v-for="(liItem,liIndex) in item.chooseQuestion" :key="liIndex">
+            <li v-for="(liItem,liIndex) in item.tpqQuestion.chooseQuestion" :key="liIndex">
               <el-checkbox
                 v-model="liItem.cqIsRight"
                 :disabled="item.redactShow"
@@ -49,7 +49,7 @@
                 icon="el-icon-delete"
                 circle
                 @click="deleteLi(index,liIndex)"
-                v-if="item.chooseQuestion.length>2"
+                v-if="item.tpqQuestion.chooseQuestion.length>2"
                 v-show="item.redactShow==false"
               ></el-button>
             </li>
@@ -57,19 +57,19 @@
           <el-button
             style="margin:0 12px 0 50px;"
             round
-            @click="handleEdit(item,index)"
+            @click="handleEdit(item,index,1)"
             :disabled="!item.redactShow"
           >编辑</el-button>
-          <span v-if="!item.redactShow">
+          <span v-if="item.redactShow==false">
             <el-button round @click="cancelEdit(item,index,1)">取消</el-button>
             <el-button
               type="info"
               round
-              @click="addEdit(index)"
-              :disabled="item.chooseQuestion.length>=liList.length"
+              @click="addEdit(item,index)"
+              :disabled="item.tpqQuestion.chooseQuestion.length>=liList.length"
             >新增选项</el-button>
-            <el-button type="primary" round @click="saveEdit(item,index)">保存更改</el-button>
-            <el-button type="warning" round @click="delEdit(choiceData,index)">删除题目</el-button>
+            <el-button type="primary" round @click="saveEdit(item,index,1)">保存更改</el-button>
+            <el-button type="warning" round @click="delEdit(item,index,1)">删除题目</el-button>
           </span>
         </li>
       </ol>
@@ -137,39 +137,42 @@
       </div>
       <ol class="add-ol">
         <li v-for="(item,index) in essayData" :key="index" class="li-number">
-          {{ item.questionTitle}}
-          <el-input-number v-model="item.tpqScore" :min="1"/>
+          <span v-show="item.redactShow">{{ item.tpqQuestion.questionTitle}}</span>
+          <el-input
+            type="textarea"
+            v-show="!item.redactShow"
+            v-model="item.tpqQuestion.questionTitle"
+            autocomplete="off"
+          ></el-input>
+          <el-input-number v-show="item.redactShow" v-model="cancelData3[index].tpqScore" :min="1"/>
           <ul class="ul_choice">
             <li style="padding-left: 30px;">
               <el-button type="info" size="mini" plain disabled>参考答案</el-button>
             </li>
             <li style="padding-left: 30px;">
-              <span v-show="item.redactShow">{{ item.answerQuestion.aqAnswer }}</span>
+              <span v-show="item.redactShow">{{ item.tpqQuestion.answerQuestion.aqAnswer }}</span>
               <p v-show="item.redactShow==false" style="width:100%;margin-right:20px;">
-                <el-input type="text" v-model="item.answerQuestion.aqAnswer"></el-input>
+                <el-input type="text" v-model="item.tpqQuestion.answerQuestion.aqAnswer"></el-input>
               </p>
             </li>
           </ul>
           <el-button
             style="margin:0 12px 0 50px;"
             round
-            @click="handleEdit(index,essayData)"
+            @click="handleEdit(item,index,3)"
             :disabled="!item.redactShow"
           >编辑</el-button>
-          <!-- <span v-if="!item.redactShow">
-            <el-button round @click="cancelEdit(index)">取消</el-button>
-            <el-button
-              type="info"
-              round
-              @click="addEdit(index)"
-              :disabled="item.chooseQuestion.length>=liList.length"
-            >新增选项</el-button>
-            <el-button type="primary" round @click="saveEdit(index,item.chooseQuestion)">保存更改</el-button>
-            <el-button type="warning" round @click="delEdit(index)">删除题目</el-button>
-          </span>-->
+          <span v-if="!item.redactShow">
+            <el-button round @click="cancelEdit(item,index,3)">取消</el-button>
+            <el-button type="primary" round @click="saveEdit(item,index,3)">保存更改</el-button>
+            <el-button type="warning" round @click="delEdit(item,index,3)">删除题目</el-button>
+          </span>
         </li>
       </ol>
     </el-card>
+    <div style="text-align: center;margin-top: 50px;">
+      <el-button type="primary" @click="submitMake">下一步</el-button>
+    </div>
   </div>
 </template>
 
@@ -242,6 +245,7 @@ export default {
     };
   },
   mounted() {
+    sessionStorage.setItem("testPaperId", 3117);
     this.GetTestPaper();
   },
   methods: {
@@ -257,9 +261,20 @@ export default {
             }
           })
           .then(res => {
-            console.log(res);
             if (res.data) {
               _this.TestPaper = res.data;
+              _this.choiceData = _this.TestPaper.filter(
+                item => item.tpqQuestion.questionTypeId == 1
+              );
+              _this.choiceData.forEach(item => (item.redactShow = true));
+              _this.cancelData1 = _this.choiceData;
+              console.log(_this.cancelData1);
+              _this.essayData = _this.TestPaper.filter(
+                item => item.tpqQuestion.questionTypeId == 3
+              );
+              _this.essayData.forEach(item => (item.redactShow = true));
+              _this.cancelData3 = _this.essayData;
+              console.log(_this.cancelData3);
             }
           })
           .catch(error => {
@@ -271,11 +286,21 @@ export default {
      * 编辑题目
      * @param {Object} data 题目对象
      * @param {Number} index 数据下标
+     * @param {Number} id 题目取消操作
      */
-    handleEdit(data, index) {
+    handleEdit(data, index, id) {
       let _this = this;
-      _this.cancelData1 = JSON.parse(JSON.stringify(_this.cancelData1));
+      switch (id) {
+        case 1:
+          _this.cancelData1 = JSON.parse(JSON.stringify(_this.cancelData1));
+          break;
+        case 3:
+          _this.cancelData3 = JSON.parse(JSON.stringify(_this.cancelData3));
+          break;
+      }
       data.redactShow = false;
+      // 强制Vue 实例重新渲染
+      _this.$forceUpdate();
     },
     /**
      * 取消编辑
@@ -285,32 +310,25 @@ export default {
      */
     cancelEdit(data, index, id) {
       let _this = this;
-      data.redactShow = true;
+      // data.redactShow = true;
       switch (id) {
         case 1:
           _this.choiceData[index] = _this.cancelData1[index];
           break;
-        // case 2:
-        //   data.answerQuestion = _this.cancelData2[index].answerQuestion;
-        //   break;
+        case 3:
+          _this.essayData[index] = _this.cancelData3[index];
+          break;
       }
-      // switch (id) {
-      //   case 1:
-      //     data[index] = _this.cancelData1[index];
-      //     // data[index].chooseQuestion = _this.cancelData1[index].chooseQuestion;
-      //     break;
-      //   case 2:
-      //     data[index].answerQuestion = _this.cancelData2[index].answerQuestion;
-      //     break;
-      // }
+      _this.$forceUpdate();
     },
     /**
      * 新增选项
+     * @param {Object} data 题目对象
      * @param {Number} index 数据下标
      */
-    addEdit(index) {
+    addEdit(data, index) {
       let _this = this;
-      _this.choiceData[index].chooseQuestion.push({
+      data.tpqQuestion.chooseQuestion.push({
         cqOption: "",
         cqIsRight: false
       });
@@ -321,38 +339,66 @@ export default {
      */
     deleteLi(index, liIndex) {
       let _this = this;
-      _this.choiceData[index].chooseQuestion.splice(liIndex, 1);
+      _this.choiceData[index].tpqQuestion.chooseQuestion.splice(liIndex, 1);
     },
     /**
      * 保存更改
      * @param {Object} data 当前选项数据对象
      * @param {Number} index 数据下标
      */
-    saveEdit(data, index) {
+    saveEdit(data, index, id) {
       let _this = this;
       let boolen = false;
-      _this.choiceData[index].chooseQuestion.forEach(item => {
-        if (item.cqIsRight) {
-          boolen = true;
-        }
-      });
-      if (boolen) {
-        data.redactShow = true;
-        _this.cancelData1[index] = data;
-      } else {
-        _this.$message({
-          message: "最少勾选一个答案",
-          type: "warning"
+      if (id == 1) {
+        data.tpqQuestion.chooseQuestion.forEach(item => {
+          if (item.cqIsRight) {
+            boolen = true;
+          }
         });
+        if (!boolen) {
+          _this.$message({
+            message: "最少勾选一个答案",
+            type: "warning"
+          });
+          return;
+        }
       }
+      console.log(data.tpqQuestion);
+      _this.axios
+        .post("/TestPaper/ModifyQuestion", data.tpqQuestion)
+        .then(res => {
+          console.log(res);
+          let code = res.data.code;
+          let message = res.data.message;
+          let reData = res.data.data;
+          _this.formMessage(code, message);
+          if (code == 1) {
+            switch (id) {
+              case 1:
+                _this.cancelData1[index].chooseQuestion = reData.chooseQuestion;
+                _this.cancelData1[index].questionTitle = reData.questionTitle;
+                break;
+              case 3:
+                _this.cancelData3[index].answerQuestion = reData.answerQuestion;
+                _this.cancelData3[index].questionTitle = reData.questionTitle;
+                break;
+            }
+          }
+          data.redactShow = true;
+          _this.$forceUpdate();
+        })
+        .catch(error => {
+          console.log(error);
+        });
     },
     /**
      * 删除题目
      * @param {Object} data 题目对象
      * @param {Number} index 数据下标
      */
-    delEdit(data, index) {
+    delEdit(data, index, id) {
       let _this = this;
+      console.log(data.tpqQuestionId);
       _this
         .$confirm("此操作将删除题目, 是否继续?", "提示", {
           confirmButtonText: "确定",
@@ -360,8 +406,33 @@ export default {
           type: "warning"
         })
         .then(() => {
-          data.splice(index, 1);
-          _this.cancelData1.splice(index, 1);
+          _this.axios
+            .post("/TestPaper/RemoveQuestionFromTestPaper", null, {
+              params: {
+                paperQuestionId: data.tpqId
+              }
+            })
+            .then(res => {
+              console.log(res);
+              let code = res.data.code;
+              let message = res.data.message;
+              _this.formMessage(code, message);
+              if (code == 1) {
+                switch (id) {
+                  case 1:
+                    _this.choiceData.splice(index, 1);
+                    _this.cancelData1.splice(index, 1);
+                    break;
+                  case 3:
+                    _this.essayData.splice(index, 1);
+                    _this.cancelData3.splice(index, 1);
+                    break;
+                }
+              }
+            })
+            .catch(error => {
+              console.log(error);
+            });
         })
         .catch(() => {
           _this.$message({
@@ -376,6 +447,14 @@ export default {
      */
     getChoice(data) {
       let _this = this;
+      _this.addQuestion(data, 1);
+    },
+    getEssay(data) {
+      let _this = this;
+      _this.addQuestion(data, 3);
+    },
+    addQuestion(data, id) {
+      let _this = this;
       _this.axios
         .post("/TestPaper/AddQuestionToTestPaper", {
           tpqPaperId: sessionStorage.getItem("testPaperId"),
@@ -383,33 +462,27 @@ export default {
           tpqQuestion: data
         })
         .then(res => {
-          console.log(res);
           let code = res.data.code; //返回代码
           let message = res.data.message; //消息
-          // let data = res.data.data; //操作成功后，返回给前端有用的数据
-          if (code == 1) {
-            _this.choiceData.push(data);
-            _this.cancelData1.push(JSON.parse(JSON.stringify(data)));
-          }
+          let reData = res.data.data; //操作成功后，返回给前端有用的数据
+          reData.redactShow = true;
           _this.formMessage(code, message);
+          if (code == 1) {
+            switch (id) {
+              case 1:
+                _this.choiceData.push(reData);
+                _this.cancelData1.push(JSON.parse(JSON.stringify(reData)));
+                break;
+              case 3:
+                _this.essayData.push(reData);
+                _this.essayData1.push(JSON.parse(JSON.stringify(reData)));
+                break;
+            }
+          }
         })
         .catch(error => {
           console.log(error);
         });
-    },
-    getEssay(data) {
-      let _this = this;
-      console.log(data);
-      // _this.axios
-      //   .post("/TestPaper/AddQuestionToTestPaper", data)
-      //   .then(res => {
-      //     console.log(res);
-      //   })
-      //   .catch(error => {
-      //     console.log(error);
-      //   });
-      // _this.essayData.push(data);
-      // _this.essayData.push(JSON.parse(JSON.stringify(data)));
     },
     /**
      * 操作表单提示消息
@@ -445,6 +518,10 @@ export default {
         message: message,
         type: type
       });
+    },
+    submitMake() {
+      let _this = this;
+      _this.$emit("geNext");
     }
   },
   computed: {
@@ -470,7 +547,7 @@ export default {
     sumEssay() {
       let _this = this;
       let sum = 0;
-      _this.essayData.forEach(item => {
+      _this.cancelData3.forEach(item => {
         sum += item.tpqScore;
       });
       return sum;
