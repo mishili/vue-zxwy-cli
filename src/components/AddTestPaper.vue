@@ -100,7 +100,6 @@
           <el-form
             :model="item.tpqQuestion"
             status-icon
-            ref="gapForm"
             @submit.native.prevent
             v-show="!item.redactShow"
           >
@@ -109,15 +108,15 @@
                 size="small"
                 round
                 icon="el-icon-document-add"
-                @click="insertion"
+                @click="insertion(item,index)"
                 :disabled="item.tpqQuestion.fillQuestion.length>=6"
               >插入填空</el-button>
               <el-input
                 type="textarea"
                 v-model="item.tpqQuestion.questionTitle"
                 autocomplete="off"
-                id="inputGaps"
-                @keyup.native="delTitle"
+                :id="'inputGaps'+index"
+                @keyup.native="delTitle(item,index)"
               ></el-input>
             </el-form-item>
             <el-form-item
@@ -283,8 +282,79 @@ export default {
     this.GetTestPaper();
   },
   methods: {
-    insertion() {},
-    delTitle() {},
+   /**
+     * 插入填空
+     */
+    insertion(data,index) {
+      var elInput = document.getElementById("inputGaps"+index);
+      var startPos = elInput.selectionStart; // input 第0个字符到选中的字符
+      var endPos = elInput.selectionEnd; // 选中的字符到最后的字符
+      if (startPos === undefined || endPos === undefined) return;
+      var txt = elInput.value;
+      // 将_添加到选中的光标位置
+      var result = txt.substring(0, startPos) + "▁" + txt.substring(endPos);
+      elInput.value = result; // 赋值给input的value
+      // 重新定义光标位置
+      elInput.focus();
+      elInput.selectionStart = startPos + 1;
+      elInput.selectionEnd = startPos + 1;
+      // 绑定表单输入框内容
+      data.tpqQuestion.questionTitle = elInput.value;
+      data.gapTitle = data.tpqQuestion.questionTitle.split("▁");
+      // // 上一个input输入的值
+      data.title = JSON.parse(JSON.stringify(data.tpqQuestion.questionTitle));
+      // 添加填空内容对象
+      data.tpqQuestion.fillQuestion.push({
+        fqOrder: 1, //填空序号
+        fqAnswer: "", //第一个空的答案
+        fillQuestionScore: [
+          {
+            fqsScore: 2 //第一个空的分值
+          }
+        ]
+      });
+    },
+    delTitle(data,index) {
+      let _this = this;
+      // 输入时拆分
+      data.gapTitle = data.tpqQuestion.questionTitle.split("▁");
+      if (data.title) {
+        //上一个是否为空
+        // 长度改变判定为删除_
+        if (data.tpqQuestion.questionTitle.length < data.title.length) {
+          var elInput = document.getElementById("inputGaps"+index);
+          var startPos = elInput.selectionStart; // input 第0个字符到选中的字符
+          var endPos = elInput.selectionEnd; // 选中的字符到最后的字符
+          if (startPos === undefined || endPos === undefined) return;
+          // 得到当前删除的字符
+          var txt1 = data.title.substring(endPos, endPos + 1);
+          // 当前光标之前的字符串并拆分为数组集合
+          var txt2 = data.tpqQuestion.questionTitle
+            .substring(0, startPos)
+            .split("▁");
+          // 删除的字符是否为_
+          if (txt1 == "▁") {
+            var txtLength = 0;
+            txt2.forEach((item, index) => {
+              // _字符在最后一个的时候,集合会相同,根据长度删除
+              if (item == data.gapTitle[index]) {
+                txtLength += 1;
+              }
+              // 光标之前的数组集合与现在的集合字符串不相等删除
+              if (item != data.gapTitle[index]) {
+                data.tpqQuestion.fillQuestion.splice(index, 1);
+              }
+            });
+            // 集合相同,_字符在最后，也删除
+            if (txtLength == txt2.length) {
+              data.tpqQuestion.fillQuestion.splice(txtLength - 1, 1);
+            }
+          }
+        }
+      }
+      data.title = JSON.parse(JSON.stringify(data.tpqQuestion.questionTitle));
+      _this.$forceUpdate();
+    },
     // 获取试卷信息
     GetTestPaper() {
       let _this = this;
@@ -304,7 +374,7 @@ export default {
                 item => item.tpqQuestion.questionTypeId == 1
               );
               _this.choiceData.forEach(item => (item.redactShow = true));
-              _this.cancelData1 = _this.choiceData;
+              _this.cancelData1 = JSON.parse(JSON.stringify(_this.choiceData));
               // console.log(_this.cancelData1);
 
               _this.GapData = _this.TestPaper.filter(
@@ -312,16 +382,17 @@ export default {
               );
               _this.GapData.forEach((item, index) => {
                 item.redactShow = true;
-                item.gapTitle = item.tpqQuestion.questionTitle.split("_");
+                item.gapTitle = item.tpqQuestion.questionTitle.split("▁");
+                item.title = item.tpqQuestion.questionTitle;
               });
-              _this.cancelData2 = _this.GapData;
+              _this.cancelData2 = JSON.parse(JSON.stringify(_this.GapData));
               console.log(_this.cancelData2);
 
               _this.essayData = _this.TestPaper.filter(
                 item => item.tpqQuestion.questionTypeId == 3
               );
               _this.essayData.forEach(item => (item.redactShow = true));
-              _this.cancelData3 = _this.essayData;
+              _this.cancelData3 = JSON.parse(JSON.stringify(_this.essayData));
               // console.log(_this.cancelData3);
             }
           })
@@ -417,7 +488,7 @@ export default {
           return;
         }
       }
-      console.log(data.tpqQuestion);
+      // console.log(data.tpqQuestion);
       _this.axios
         .post("/TestPaper/ModifyQuestion", data.tpqQuestion)
         .then(res => {
@@ -441,9 +512,9 @@ export default {
                 _this.cancelData3[index].questionTitle = reData.questionTitle;
                 break;
             }
+            data.redactShow = true;
+            _this.$forceUpdate();
           }
-          data.redactShow = true;
-          _this.$forceUpdate();
         })
         .catch(error => {
           console.log(error);
@@ -542,6 +613,7 @@ export default {
               case 2:
                 console.log(reData);
                 reData.gapTitle = data.gapTitle;
+                reData.title = data.questionTitle;
                 _this.GapData.push(reData);
                 _this.cancelData2.push(JSON.parse(JSON.stringify(reData)));
                 break;

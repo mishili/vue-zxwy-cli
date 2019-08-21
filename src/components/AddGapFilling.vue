@@ -52,7 +52,7 @@ export default {
     return {
       formLabelWidth: "100px", //表单lable宽度
       gapTitle: [], //添加_时的拆分的字段集合
-      title: "",
+      title: "", //键盘事件时上一个的值
       gapForm: {
         tpqScore: 0, //分值
         questionTitle: "", //填空题的标题
@@ -88,7 +88,7 @@ export default {
       if (startPos === undefined || endPos === undefined) return;
       var txt = elInput.value;
       // 将_添加到选中的光标位置
-      var result = txt.substring(0, startPos) + "_" + txt.substring(endPos);
+      var result = txt.substring(0, startPos) + "▁" + txt.substring(endPos);
       elInput.value = result; // 赋值给input的value
       // 重新定义光标位置
       elInput.focus();
@@ -96,7 +96,7 @@ export default {
       elInput.selectionEnd = startPos + 1;
       // 绑定表单输入框内容
       _this.gapForm.questionTitle = elInput.value;
-      _this.gapTitle = _this.gapForm.questionTitle.split("_");
+      _this.gapTitle = _this.gapForm.questionTitle.split("▁");
       // 上一个input输入的值
       _this.title = JSON.parse(JSON.stringify(_this.gapForm.questionTitle));
       // 添加填空内容对象
@@ -116,32 +116,32 @@ export default {
     delTitle() {
       let _this = this;
       // 输入时拆分
-      _this.gapTitle = _this.gapForm.questionTitle.split("_");
+      _this.gapTitle = _this.gapForm.questionTitle.split("▁");
       if (_this.title) {
         //上一个是否为空
         // 长度改变判定为删除_
-        if (this.gapForm.questionTitle.length < _this.title.length) {
+        if (_this.gapForm.questionTitle.length < _this.title.length) {
           var elInput = document.getElementById("inputGaps");
           var startPos = elInput.selectionStart; // input 第0个字符到选中的字符
           var endPos = elInput.selectionEnd; // 选中的字符到最后的字符
           if (startPos === undefined || endPos === undefined) return;
           // 得到当前删除的字符
-          var txt1 = this.title.substring(endPos, endPos + 1);
+          var txt1 = _this.title.substring(endPos, endPos + 1);
           // 当前光标之前的字符串并拆分为数组集合
-          var txt2 = this.gapForm.questionTitle
+          var txt2 = _this.gapForm.questionTitle
             .substring(0, startPos)
-            .split("_");
+            .split("▁");
           // console.log(txt1, txt2, _this.gapTitle);
           // 删除的字符是否为_
-          if (txt1 == "_") {
+          if (txt1 == "▁") {
             var txtLength = 0;
             txt2.forEach((item, index) => {
               // _字符在最后一个的时候,集合会相同,根据长度删除
-              if (item == this.gapTitle[index]) {
+              if (item == _this.gapTitle[index]) {
                 txtLength += 1;
               }
               // 光标之前的数组集合与现在的集合字符串不相等删除
-              if (item != this.gapTitle[index]) {
+              if (item != _this.gapTitle[index]) {
                 _this.gapForm.fillQuestion.splice(index, 1);
               }
             });
@@ -161,12 +161,6 @@ export default {
       var _this = this;
       _this.$refs[formName].validate(valid => {
         if (valid) {
-          // _this.gapForm.questionTitle.split("").forEach((item, index) => {
-          //   if (item == "_") {
-          //     item = "_______";
-          //   }
-          //   _this.gapForm.questionTitle += item;
-          // });
           _this.gapForm.fillQuestion.forEach((item, index) => {
             _this.gapForm.tpqScore += Number(
               item.fillQuestionScore[0].fqsScore
