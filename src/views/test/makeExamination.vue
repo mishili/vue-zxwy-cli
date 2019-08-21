@@ -35,15 +35,19 @@ export default {
   },
   data() {
     return {
-      active: 1 //步骤条位置
+      active: 0 //步骤条位置
     };
+  },
+  created() {
+    if(sessionStorage.getItem("testPaperId")){
+      this.active=1;
+    }
   },
   methods: {
     /**
      * 步骤条
      */
     next() {
-      console.log(1111)
       if (this.active++ > 2) this.active = 0;
     }
   }

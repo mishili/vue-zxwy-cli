@@ -12,7 +12,7 @@
     </div>
     <div class="redio-content">
       <add-choice-question v-if="radio==1" @setChoice="getChoice"/>
-      <add-gap-filling v-if="radio==2"/>
+      <add-gap-filling v-if="radio==2" @setGap="getGap"/>
       <add-essay-question v-if="radio==3" @setEssay="getEssay"/>
     </div>
     <!-- 选择题 -->
@@ -41,7 +41,7 @@
                 style="width:68px;padding-left:20px;"
               >{{ liList[liIndex] }}、</el-checkbox>
               <span v-show="item.redactShow">{{ liItem.cqOption }}</span>
-              <p v-show="item.redactShow==false" style="width:100%;margin-right:20px;">
+              <p v-show="!item.redactShow" style="width:100%;margin-right:20px;">
                 <el-input type="text" v-model="liItem.cqOption"></el-input>
               </p>
               <el-button
@@ -50,7 +50,7 @@
                 circle
                 @click="deleteLi(index,liIndex)"
                 v-if="item.tpqQuestion.chooseQuestion.length>2"
-                v-show="item.redactShow==false"
+                v-show="!item.redactShow"
               ></el-button>
             </li>
           </ul>
@@ -60,7 +60,7 @@
             @click="handleEdit(item,index,1)"
             :disabled="!item.redactShow"
           >编辑</el-button>
-          <span v-if="item.redactShow==false">
+          <span v-if="!item.redactShow">
             <el-button round @click="cancelEdit(item,index,1)">取消</el-button>
             <el-button
               type="info"
@@ -82,50 +82,86 @@
           <a>{{ sumGap }}/{{ sumData }}</a>分）
         </span>
       </div>
-      <!-- <ol class="add-ol">
-        <li v-for="(item,index) in choiceData" :key="index" class="li-number">
-          {{ item.questionTitle}}
-          <el-input-number v-model="item.tpqScore" :min="1"/>
-          <ul class="ul_choice">
-            <li v-for="(liItem,liIndex) in item.chooseQuestion" :key="liIndex">
-              <el-checkbox
-                v-model="liItem.cqIsRight"
-                :disabled="item.redactShow"
-                style="width:68px;padding-left:20px;"
-              >{{ liList[liIndex] }}、</el-checkbox>
-              <span v-show="item.redactShow">{{ liItem.cqOption }}</span>
-              <p v-show="item.redactShow==false" style="width:100%;margin-right:20px;">
-                <el-input type="text" v-model="liItem.cqOption"></el-input>
-              </p>
+      <ol class="add-ol">
+        <li v-for="(item,index) in GapData" :key="index" class="li-number">
+          <span class="gapTitle" v-show="item.redactShow">
+            <p v-for="(items,indexs) in item.gapTitle" :key="indexs">
+              {{ items }}
+              <template v-if="item.tpqQuestion.fillQuestion[indexs]">
+                <span>{{item.tpqQuestion.fillQuestion[indexs].fqAnswer}}</span>
+                <el-input-number
+                  size="small"
+                  v-model="item.tpqQuestion.fillQuestion[indexs].fillQuestionScore[0].fqsScore"
+                  :min="1"
+                />
+              </template>
+            </p>
+          </span>
+          <el-form
+            :model="item.tpqQuestion"
+            status-icon
+            ref="gapForm"
+            @submit.native.prevent
+            v-show="!item.redactShow"
+          >
+            <el-form-item label="题干" style="position: relative;top: -25px;margin-bottom: 0;margin-top: 20px;">
+              <el-button
+                size="small"
+                round
+                icon="el-icon-document-add"
+                @click="insertion"
+                :disabled="item.tpqQuestion.fillQuestion.length>=6"
+              >插入填空</el-button>
+              <el-input
+                type="textarea"
+                v-model="item.tpqQuestion.questionTitle"
+                autocomplete="off"
+                id="inputGaps"
+                @keyup.native="delTitle"
+              ></el-input>
+            </el-form-item>
+            <el-form-item
+              class="insertion"
+              v-for="(items,indexs) in item.tpqQuestion.fillQuestion"
+              :key="indexs"
+            >
               <el-button
                 type="danger"
-                icon="el-icon-delete"
                 circle
-                @click="deleteLi(index,liIndex)"
-                v-if="item.chooseQuestion.length>2"
-                v-show="item.redactShow==false"
-              ></el-button>
-            </li>
-          </ul>
+                v-show="items.fqOrder==indexs+1?items.fqOrder:items.fqOrder=indexs+1"
+              >{{ items.fqOrder }}</el-button>
+              <el-input
+                type="text"
+                v-model="items.fqAnswer"
+                autocomplete="off"
+                style=" margin: 0 13px;"
+              ></el-input>
+            </el-form-item>
+            <el-form-item label="题目预览" :label-width="formLabelWidth" style="margin-bottom: 0;">
+              <span class="gapTitle">
+                <p v-for="(items,indexs) in item.gapTitle" :key="indexs">
+                  {{ items }}
+                  <template v-if="item.tpqQuestion.fillQuestion[indexs]">
+                    <span>{{item.tpqQuestion.fillQuestion[indexs].fqAnswer}}</span>
+                    ({{ item.tpqQuestion.fillQuestion[indexs].fillQuestionScore[0].fqsScore }}分)
+                  </template>
+                </p>
+              </span>
+            </el-form-item>
+          </el-form>
           <el-button
             style="margin:0 12px 0 50px;"
             round
-            @click="handleEdit(index)"
+            @click="handleEdit(item,index,2)"
             :disabled="!item.redactShow"
           >编辑</el-button>
           <span v-if="!item.redactShow">
-            <el-button round @click="cancelEdit(index)">取消</el-button>
-            <el-button
-              type="info"
-              round
-              @click="addEdit(index)"
-              :disabled="item.chooseQuestion.length>=liList.length"
-            >新增选项</el-button>
-            <el-button type="primary" round @click="saveEdit(index,item.chooseQuestion)">保存更改</el-button>
-            <el-button type="warning" round @click="delEdit(index)">删除题目</el-button>
+            <el-button round @click="cancelEdit(item,index,2)">取消</el-button>
+            <el-button type="primary" round @click="saveEdit(item,index,2)">保存更改</el-button>
+            <el-button type="warning" round @click="delEdit(item,index,2)">删除题目</el-button>
           </span>
         </li>
-      </ol>-->
+      </ol>
     </el-card>
     <!-- 问答题 -->
     <el-card class="box-card">
@@ -151,7 +187,7 @@
             </li>
             <li style="padding-left: 30px;">
               <span v-show="item.redactShow">{{ item.tpqQuestion.answerQuestion.aqAnswer }}</span>
-              <p v-show="item.redactShow==false" style="width:100%;margin-right:20px;">
+              <p v-show="!item.redactShow" style="width:100%;margin-right:20px;">
                 <el-input type="text" v-model="item.tpqQuestion.answerQuestion.aqAnswer"></el-input>
               </p>
             </li>
@@ -188,12 +224,10 @@ export default {
   },
   data() {
     return {
-      radio: 1, //题目选项
+      // redactShow 编辑状态(自己定义)
+      formLabelWidth: "100px", //表单lable宽度
+      radio: 2, //题目选项
       liList: ["A", "B", "C", "D", "E", "F"],
-      // sumChoice: 0, //选择题分数
-      // sumGap: 0, //填空题分数
-      // sumEssay: 0, //填空题分数
-      // sumData: 0, //总分数//试卷数据
       TestPaper: [
         {
           tpqId: 0, //题目在试卷上的主键编号
@@ -245,10 +279,12 @@ export default {
     };
   },
   mounted() {
-    sessionStorage.setItem("testPaperId", 3117);
+    // sessionStorage.setItem("testPaperId", 3124);
     this.GetTestPaper();
   },
   methods: {
+    insertion() {},
+    delTitle() {},
     // 获取试卷信息
     GetTestPaper() {
       let _this = this;
@@ -262,19 +298,31 @@ export default {
           })
           .then(res => {
             if (res.data) {
-              _this.TestPaper = res.data;
+              _this.TestPaper = res.data.questions;
+
               _this.choiceData = _this.TestPaper.filter(
                 item => item.tpqQuestion.questionTypeId == 1
               );
               _this.choiceData.forEach(item => (item.redactShow = true));
               _this.cancelData1 = _this.choiceData;
-              console.log(_this.cancelData1);
+              // console.log(_this.cancelData1);
+
+              _this.GapData = _this.TestPaper.filter(
+                item => item.tpqQuestion.questionTypeId == 2
+              );
+              _this.GapData.forEach((item, index) => {
+                item.redactShow = true;
+                item.gapTitle = item.tpqQuestion.questionTitle.split("_");
+              });
+              _this.cancelData2 = _this.GapData;
+              console.log(_this.cancelData2);
+
               _this.essayData = _this.TestPaper.filter(
                 item => item.tpqQuestion.questionTypeId == 3
               );
               _this.essayData.forEach(item => (item.redactShow = true));
               _this.cancelData3 = _this.essayData;
-              console.log(_this.cancelData3);
+              // console.log(_this.cancelData3);
             }
           })
           .catch(error => {
@@ -293,6 +341,9 @@ export default {
       switch (id) {
         case 1:
           _this.cancelData1 = JSON.parse(JSON.stringify(_this.cancelData1));
+          break;
+        case 2:
+          _this.cancelData2 = JSON.parse(JSON.stringify(_this.cancelData2));
           break;
         case 3:
           _this.cancelData3 = JSON.parse(JSON.stringify(_this.cancelData3));
@@ -314,6 +365,9 @@ export default {
       switch (id) {
         case 1:
           _this.choiceData[index] = _this.cancelData1[index];
+          break;
+        case 2:
+          _this.GapData[index] = _this.cancelData2[index];
           break;
         case 3:
           _this.essayData[index] = _this.cancelData3[index];
@@ -378,6 +432,10 @@ export default {
                 _this.cancelData1[index].chooseQuestion = reData.chooseQuestion;
                 _this.cancelData1[index].questionTitle = reData.questionTitle;
                 break;
+              case 2:
+                _this.cancelData2[index].fillQuestion = reData.fillQuestion;
+                _this.cancelData2[index].questionTitle = reData.questionTitle;
+                break;
               case 3:
                 _this.cancelData3[index].answerQuestion = reData.answerQuestion;
                 _this.cancelData3[index].questionTitle = reData.questionTitle;
@@ -423,6 +481,10 @@ export default {
                     _this.choiceData.splice(index, 1);
                     _this.cancelData1.splice(index, 1);
                     break;
+                  case 2:
+                    _this.GapData.splice(index, 1);
+                    _this.cancelData2.splice(index, 1);
+                    break;
                   case 3:
                     _this.essayData.splice(index, 1);
                     _this.cancelData3.splice(index, 1);
@@ -449,6 +511,10 @@ export default {
       let _this = this;
       _this.addQuestion(data, 1);
     },
+    getGap(data) {
+      let _this = this;
+      _this.addQuestion(data, 2);
+    },
     getEssay(data) {
       let _this = this;
       _this.addQuestion(data, 3);
@@ -473,9 +539,15 @@ export default {
                 _this.choiceData.push(reData);
                 _this.cancelData1.push(JSON.parse(JSON.stringify(reData)));
                 break;
+              case 2:
+                console.log(reData);
+                reData.gapTitle = data.gapTitle;
+                _this.GapData.push(reData);
+                _this.cancelData2.push(JSON.parse(JSON.stringify(reData)));
+                break;
               case 3:
                 _this.essayData.push(reData);
-                _this.essayData1.push(JSON.parse(JSON.stringify(reData)));
+                _this.cancelData3.push(JSON.parse(JSON.stringify(reData)));
                 break;
             }
           }
@@ -588,5 +660,37 @@ export default {
 }
 .box-card:nth-child(n + 1) {
   margin-top: 20px;
+}
+/deep/.insertion {
+  .el-button.is-circle {
+    padding: 6px 9px;
+  }
+  .el-form-item__content {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+  }
+}
+.gapTitle {
+  margin-left: 10px !important;
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  p {
+    line-height: 40px;
+    height: 40px;
+    display: flex;
+    /deep/ .el-input-number {
+      margin: 0 5px;
+    }
+    span {
+      text-align: center;
+      display: inline-block;
+      min-width: 60px;
+      padding: 0 15px;
+      border-bottom: 1px solid black;
+    }
+  }
 }
 </style>

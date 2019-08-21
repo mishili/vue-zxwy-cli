@@ -1,6 +1,6 @@
 <template>
-  <el-form :model="essayForm" status-icon :rules="addrules" ref="essayForm">
-    <el-form-item label="题干2" prop="questionTitle" :label-width="formLabelWidth">
+  <el-form :model="essayForm" status-icon :rules="addrules" ref="essayForm" @submit.native.prevent>
+    <el-form-item label="题干" prop="questionTitle" :label-width="formLabelWidth">
       <el-input type="textarea" v-model="essayForm.questionTitle" autocomplete="off"></el-input>
     </el-form-item>
     <el-form-item label="参考答案" prop="answerQuestion.aqAnswer" :label-width="formLabelWidth">
@@ -65,7 +65,6 @@ export default {
           _this.$emit("setEssay", _this.essayForm);
           // 提交成功后重置
           _this.essayForm = JSON.parse(JSON.stringify(_this.setEssay));
-          // _this.$refs['essayForm'].resetFields() //会把传入的参数清空
         }
       });
     },
@@ -76,6 +75,7 @@ export default {
     resetForm(formName) {
       let _this = this;
       _this.$refs[formName].resetFields();
+      _this.essayForm = JSON.parse(JSON.stringify(_this.setEssay));
     }
   }
 };

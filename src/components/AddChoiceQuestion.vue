@@ -1,5 +1,5 @@
 <template>
-  <el-form :model="choiceForm" status-icon :rules="addrules" ref="choiceForm">
+  <el-form :model="choiceForm" status-icon :rules="addrules" ref="choiceForm" @submit.native.prevent>
     <el-form-item label="题干" prop="questionTitle" :label-width="formLabelWidth">
       <el-input type="textarea" v-model="choiceForm.questionTitle" autocomplete="off"></el-input>
     </el-form-item>
@@ -81,6 +81,14 @@ export default {
           {
             cqOption: "",
             cqIsRight: false
+          },
+          {
+            cqOption: "",
+            cqIsRight: false
+          },
+          {
+            cqOption: "",
+            cqIsRight: false
           }
         ]
       },
@@ -126,6 +134,7 @@ export default {
             let choice = JSON.parse(JSON.stringify(_this.setChoice))
             // 提交成功后重置
             _this.choiceForm = choice;
+            // _this.$refs['essayForm'].resetFields() //会把传入的参数清空
           } else {
             _this.$message({
               message: "最少勾选一个答案",
@@ -142,6 +151,7 @@ export default {
     resetForm(formName) {
       let _this = this;
       _this.$refs[formName].resetFields();
+      _this.choiceForm = JSON.parse(JSON.stringify(_this.setChoice));
     }
   }
 };
